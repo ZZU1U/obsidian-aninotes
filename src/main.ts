@@ -1,84 +1,179 @@
-import {App, Editor, MarkdownView, Modal, Notice, Plugin} from 'obsidian';
-import {DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab} from "./settings";
+import { App, Modal, Notice, ObsidianProtocolData, Plugin, TFile } from "obsidian";
+import { MANSettings, SettingTab } from "./settings";
+import { serviceAuth, updateToken } from "api/auth";
+import { OAuthDataSchema } from "models/auth";
+import { getUserInfo } from "user";
+import { UserAnimeListItem } from "models/anime";
+import { getUserAnimeList, enrichUserAnimeListWithDetails } from "api/anime";
+import { renderTemplate, animeTemplateContext, buildFrontmatterFromEntries, buildNoteContent } from "template";
+import { DEFAULT_SETTINGS } from "./constant";
 
-// Remember to rename these classes and interfaces!
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class MANPlugin extends Plugin {
+	settings: MANSettings;
+	OAuthURLData: OAuthDataSchema | undefined = undefined;
+
+	private injectStyles() {
+		const style = document.createElement("style");
+		style.id = "my-plugin-settings-style";
+		style.textContent = `
+			.my-plugin-tabs {
+				display: flex;
+				gap: 8px;
+				margin-bottom: 8px;
+			}
+
+			.my-plugin-tabs button.is-active {
+				background-color: var(--interactive-accent);
+				color: var(--text-on-accent);
+			}
+		`;
+		document.head.appendChild(style);
+	}
+	private removeStyles() {
+		document.getElementById("my-plugin-settings-style")?.remove();
+	}
 
 	async onload() {
+		this.injectStyles();
+
 		await this.loadSettings();
-
-		// This creates an icon in the left ribbon.
-		this.addRibbonIcon('dice', 'Sample', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
-		});
-
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status bar text');
-
-		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
-			id: 'open-modal-simple',
-			name: 'Open modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
-			}
-		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'replace-selected',
-			name: 'Replace selected content',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				editor.replaceSelection('Sample editor command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-modal-complex',
-			name: 'Open modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
+			id: 'refresh-token',
+			name: 'Update access token',
+			callback: async () => {
+				if (!this.settings.refreshToken) {
+					new Notice("Refresh failed: no refresh token")
+					return;
 				}
-				return false;
+
+				const token = await updateToken(this.settings.refreshToken);
+
+				if (!token) {
+					new Notice("Refresh failed: no token received")
+					return;
+				}
+
+				this.settings.accessToken = token.access_token;
+				this.settings.refreshToken = token.refresh_token;
+				await this.saveSettings()
+
+				new Notice("Tokens updated")
 			}
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			new Notice("Click");
+		this.addCommand({
+			id: "sync-anime-library",
+			name: "Sync MAL anime lists",
+			callback: async () => {
+				if (!this.settings.accessToken) {
+					new Notice("Not authenticated. Connect account in settings.");
+					return;
+				}
+				const list = await getUserAnimeList(this.settings.accessToken);
+				if (!list?.data.length) {
+					new Notice("No anime list or list is empty.");
+					return;
+				}
+				let data = list.data;
+				if (this.settings.fetchRelatedAnimeManga) {
+					new Notice("Fetching related anime/manga for each entry…");
+					data = await enrichUserAnimeListWithDetails(data, this.settings.accessToken, { delayMs: 250 });
+				}
+				await this.updateAnimeFiles(data);
+			},
 		});
 
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+		this.addCommand({
+			id: 'sync-user-info',
+			name: 'Sync MAL basic user info',
+			callback: async () => {
+				const userData = await getUserInfo(this.settings.accessToken);
+				this.settings.clientId = userData?.id.toString() || "";
+				this.settings.username = userData?.name || "";
+			}
+		});
 
+		this.addSettingTab(new SettingTab(this.app, this));
+		//this.addSettingTab(new AnimeNoteSettingTab(this.app, this));
+
+		this.registerObsidianProtocolHandler(
+			'man-revive-sync/mal',
+			async (params: ObsidianProtocolData) => {
+				const code = params?.code;
+				const state = params?.state;
+
+				if (!code) {
+					new Notice("Bad auth: no code returned");
+					return;
+				}
+				if (!this.OAuthURLData) {
+					new Notice("Bad auth: no auth data created");
+					return;
+				}
+				if (state !== this.OAuthURLData.state) {
+					new Notice("Bad auth: expired state");
+					return;
+				}
+				
+				const token = await serviceAuth(this.OAuthURLData, code);
+
+				if (!token) {
+					new Notice("Bad auth: Auth failed");
+				} else {
+					this.OAuthURLData = undefined;
+					this.settings.accessToken = token.access_token;
+					this.settings.refreshToken = token.refresh_token;
+					await this.saveSettings()
+					new Notice("MAL auth completed");
+				}
+			}
+		)
 	}
 
 	onunload() {
+		this.removeStyles()
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<MyPluginSettings>);
+		const data = (await this.loadData()) as Partial<MANSettings> | null;
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
+		// if (!Array.isArray(this.settings.animeNoteT.frontMatterT) || this.settings.animeNoteT.frontMatterT.length === 0) {
+		// 	this.settings.animeFrontmatter = [...DEFAULT_SETTINGS.animeFrontmatter];
+		// }
+		// if (this.settings.animeBodyTemplate === undefined || this.settings.animeBodyTemplate === null) {
+		// 	this.settings.animeBodyTemplate = DEFAULT_SETTINGS.animeBodyTemplate;
+		// }
 	}
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	async updateAnimeFiles(animeList: UserAnimeListItem[]) {
+		const entries = this.settings.animeNoteT.frontMatterT;
+		const bodyTemplate = this.settings.animeNoteT.noteBodyT;
+		let updated = 0;
+
+		for (const item of animeList) {
+			const context = animeTemplateContext(item) as Record<string, unknown>;
+			console.log(context);
+			const notePath = renderTemplate(this.settings.animeNoteT.fileNameT, context).trim();
+			if (!notePath.endsWith(".md")) continue;
+
+			const frontmatter = buildFrontmatterFromEntries(entries, context, renderTemplate);
+			const body = renderTemplate(bodyTemplate, context);
+			const content = buildNoteContent(frontmatter, body);
+
+			const existing = this.app.vault.getAbstractFileByPath(notePath);
+			if (existing && existing instanceof TFile) {
+				await this.app.vault.modify(existing, content);
+			} else {
+				await this.app.vault.create(notePath, content);
+			}
+			updated++;
+		}
+		new Notice(`Synced ${updated} anime notes.`);
 	}
 }
 
