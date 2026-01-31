@@ -7,5 +7,5 @@ export interface RelatedManga {
 }
 
 export interface Manga {
-
+    id: string
 }

@@ -1,4 +1,4 @@
-import { App, Modal, Notice, ObsidianProtocolData, Plugin, TFile } from "obsidian";
+import { Notice, ObsidianProtocolData, Plugin, TFile } from "obsidian";
 import { MANSettings, SettingTab } from "./settings";
 import { serviceAuth, updateToken } from "api/auth";
 import { OAuthDataSchema } from "models/auth";
@@ -13,30 +13,7 @@ export default class MANPlugin extends Plugin {
 	settings: MANSettings;
 	OAuthURLData: OAuthDataSchema | undefined = undefined;
 
-	private injectStyles() {
-		const style = document.createElement("style");
-		style.id = "my-plugin-settings-style";
-		style.textContent = `
-			.my-plugin-tabs {
-				display: flex;
-				gap: 8px;
-				margin-bottom: 8px;
-			}
-
-			.my-plugin-tabs button.is-active {
-				background-color: var(--interactive-accent);
-				color: var(--text-on-accent);
-			}
-		`;
-		document.head.appendChild(style);
-	}
-	private removeStyles() {
-		document.getElementById("my-plugin-settings-style")?.remove();
-	}
-
 	async onload() {
-		this.injectStyles();
-
 		await this.loadSettings();
 		this.addCommand({
 			id: 'refresh-token',
@@ -64,7 +41,7 @@ export default class MANPlugin extends Plugin {
 
 		this.addCommand({
 			id: "sync-anime-library",
-			name: "Sync MAL anime lists",
+			name: "Sync anime lists",
 			callback: async () => {
 				if (!this.settings.accessToken) {
 					new Notice("Not authenticated. Connect account in settings.");
@@ -86,7 +63,7 @@ export default class MANPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'sync-user-info',
-			name: 'Sync MAL basic user info',
+			name: 'Sync basic user info',
 			callback: async () => {
 				const userData = await getUserInfo(this.settings.accessToken);
 				this.settings.clientId = userData?.id.toString() || "";
@@ -119,20 +96,19 @@ export default class MANPlugin extends Plugin {
 				const token = await serviceAuth(this.OAuthURLData, code);
 
 				if (!token) {
-					new Notice("Bad auth: Auth failed");
+					new Notice("Bad auth: auth failed");
 				} else {
 					this.OAuthURLData = undefined;
 					this.settings.accessToken = token.access_token;
 					this.settings.refreshToken = token.refresh_token;
 					await this.saveSettings()
-					new Notice("MAL auth completed");
+					new Notice("Auth completed");
 				}
 			}
 		)
 	}
 
 	onunload() {
-		this.removeStyles()
 	}
 
 	async loadSettings() {
@@ -156,8 +132,8 @@ export default class MANPlugin extends Plugin {
 		let updated = 0;
 
 		for (const item of animeList) {
-			const context = animeTemplateContext(item) as Record<string, unknown>;
-			console.log(context);
+			const context = animeTemplateContext(item); // as Record<string, unknown>; #TODO
+			//console.log(context);
 			const notePath = renderTemplate(this.settings.animeNoteT.fileNameT, context).trim();
 			if (!notePath.endsWith(".md")) continue;
 
@@ -177,18 +153,18 @@ export default class MANPlugin extends Plugin {
 	}
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
+// class SampleModal extends Modal {
+// 	constructor(app: App) {
+// 		super(app);
+// 	}
 
-	onOpen() {
-		let {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
+// 	onOpen() {
+// 		let {contentEl} = this;
+// 		contentEl.setText('Woah!');
+// 	}
 
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
-	}
-}
+// 	onClose() {
+// 		const {contentEl} = this;
+// 		contentEl.empty();
+// 	}
+// }

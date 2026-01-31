@@ -33,7 +33,7 @@ export async function getUserAnimeList(token: string): Promise<UserAnimeList | u
         }
 
         try {
-            const res = await tokenRes.json;
+            const res = await tokenRes.json as UserAnimeList;
             userList.data = userList.data.concat(res.data);
             userList.paging.next = res.paging?.next;
         } catch {

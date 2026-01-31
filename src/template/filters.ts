@@ -67,13 +67,13 @@ export const TEMPLATE_FILTERS: Record<string, FilterFn> = {
 		ensureString(v)
 			.trim()
 			.replace(/\s+/g, "_")
-			.replace(/[^\w\-]/g, "")
+			.replace(/[^\w-]/g, "")
 			.toLowerCase(),
 	kebab: (v) =>
 		ensureString(v)
 			.trim()
 			.replace(/\s+/g, "-")
-			.replace(/[^\w\-]/g, "")
+			.replace(/[^\w-]/g, "")
 			.toLowerCase(),
 	safe_name: (v) =>
 		ensureString(v)

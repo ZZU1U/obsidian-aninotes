@@ -6,3 +6,14 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.my-plugin-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.my-plugin-tabs button.is-active {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}

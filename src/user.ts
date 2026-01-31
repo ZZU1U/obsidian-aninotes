@@ -1,7 +1,6 @@
 import { requestUrl } from "obsidian";
 
-export interface AnimeUserStats {
-}
+// export interface AnimeUserStats { }
 
 export interface UserInfo {
     id: number,
@@ -31,7 +30,7 @@ export async function getUserInfo(token: string): Promise<UserInfo | undefined> 
     }
 
     try {
-        return await reqRes.json;
+        return await reqRes.json as UserInfo;
     } catch {
         console.error("Response was not JSON:", reqRes.text?.slice(0, 200));
         return undefined;

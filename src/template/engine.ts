@@ -62,7 +62,7 @@ const PLACEHOLDER_REGEX = /\{\{([^}]+)\}\}/g;
  */
 export function renderTemplate(template: string, context: Record<string, unknown>): string {
 	return template.replace(PLACEHOLDER_REGEX, (_, placeholder) => {
-		const { path, filters } = parsePlaceholder(placeholder);
+		const { path, filters } = parsePlaceholder(placeholder as string);
 		const value = getByPath(context, path);
 		return applyFilters(value, filters);
 	});

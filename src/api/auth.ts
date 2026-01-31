@@ -60,7 +60,7 @@ export async function serviceAuth(authUrl: OAuthDataSchema, code: string): Promi
     }
 
     try {
-        return await tokenRes.json;
+        return await tokenRes.json as OAuthTokenSchema;
     } catch {
         console.error("Token response was not JSON:", tokenRes.text?.slice(0, 200));
         return undefined;
@@ -88,7 +88,7 @@ export async function updateToken(refresh_token: string): Promise<OAuthTokenSche
     }
 
     try {
-        return await tokenRes.json;
+        return await tokenRes.json as OAuthTokenSchema;
     } catch {
         console.error("Token response was not JSON:", tokenRes.text?.slice(0, 200));
         return undefined;
