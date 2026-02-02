@@ -1,7 +1,7 @@
 import { NoteTemplateSettings } from "./models"
 
 export const DEFAULT_ANIME_T: NoteTemplateSettings = {
-	fileNameT: "MAL/Anime/{{title}}.md",
+	fileDir: "MAL/Anime",
 	frontMatterT: [
 		{ key: "title", value: "{{title}}", type: "text" },
 		{ key: "mal_id", value: "{{id}}", type: "text" },
@@ -15,7 +15,7 @@ export const DEFAULT_ANIME_T: NoteTemplateSettings = {
 }
 
 export const DEFAULT_MANGA_T: NoteTemplateSettings = {
-	fileNameT: "MAL/Manga/{{title}}.md",
+	fileDir: "MAL/Manga",
 	frontMatterT: [
 		{ key: "title", value: "{{title}}", type: "text" },
 		{ key: "mal_id", value: "{{id}}", type: "text" },

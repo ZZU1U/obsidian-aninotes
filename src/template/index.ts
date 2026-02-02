@@ -1,6 +1,7 @@
-export { renderTemplate } from "./engine";
-export { animeTemplateContext } from "./context";
-export { TEMPLATE_FILTERS } from "./filters";
+// Legacy exports for backward compatibility
+export { processTemplate } from "./engine";
+
+// Frontmatter utilities
 export {
 	buildFrontmatterFromEntries,
 	buildNoteContent,

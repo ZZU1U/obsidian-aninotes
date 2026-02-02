@@ -1,98 +1,91 @@
-import { RelationType, AgeRating, SourceMediaType } from "./common"
-import { RelatedManga } from "./manga"
+import { FuzzyDate, Maybe, MediaList, MediaFormat, MediaStatus, MediaListGroup, MediaListStatus } from "generated/anilist-schema";
+import { RelationshipLink } from "./common";
 
-enum AnimeMediaType {
-    UNKNOWN = "unknown",
-    TV = "tv",
-    OVA = "ova",
-    ONA = "ona",
-    MOVIE = "movie",
-    SPECIAL = "special",
-    MUSIC = "music"
-}
 
-enum AnimeStatus {
-    FINISHED_AIRING = "finished_airing",
-    CURRENTLY_AIRING = "currently_airing",
-    NOT_YET_AIRED = "not_yet_aired"
-}
-
-enum AnimeWatchStatus {
-    WATCHING = "watching",
-    COMPLETED = "completed",
-    ON_HOLD = "on_hold",
-    DROPPED = "dropped",
-    PLAN_TO_WATCH = "plan_to_watch"
-}
-
-interface RelatedAnime {
-    node: AnimeSchema,
-    relation_type: RelationType,
-    realtion_type_formatted: string,
-}
-
-interface AnimeUserListStatus {
-    status?: AnimeWatchStatus,
-    score: number,
-    num_episodes_watched: number,
-    is_rewatching: boolean,
-    start_date?: string,
-    finish_date?: string,
-    priority: number,
-    num_times_rewatched: number,
-    rewatch_value: number,
-    tags: Array<string>,
-    comments: string,
-    updated_at: string
-}
-
-export interface AnimeSchema {
+export interface AnimeModel {
     id: number,
-    title: string,
-    main_picture?: {
-        large?: string,
-        medium: string
-    },
-    alternative_titles?: {
-        synonyms?: string[],
-        en?: string,
-        ja?: string,
-    },
-    start_date?: string,
-    end_date?: string,
-    synopsis?: string,
-    mean?: number,
-    rank?: number,
-    popularity?: number,
-    num_list_users: number,
-    num_scoring_users: number,
-    nsfw?: string,
-    genres: Array<{id: number, name: string}>,
-    created_at: string,
-    updated_at: string,
-    media_type: AnimeMediaType,
-    status: AnimeStatus,
-    my_list_status: AnimeUserListStatus,
-    num_episodes: number,
-    start_season?: {year: number, season: "winter" | "spring" | "summer" | "fall"},
-    broadcast?: {day_of_the_week: string, start_time?: string},
-    source?: SourceMediaType,
-    average_episode_duration?: number,
-    rating?: AgeRating,
-    studios: Array<{id: number, name: string}>,
-    related_anime?: RelatedAnime[],
-    related_manga?: RelatedManga[]
+    idMal?: number,
+    englishTitle?: string,
+    romajiTitle?: string,
+    nativeTitle?: string,
+    synonyms?: string[],
+    startDate?: Date,
+    endDate?: Date,
+    completedAt?: Date,
+    format?: string, // MediaFormat,
+    status?: string, // MediaStatus,
+    description?: string,
+    episodes?: number,
+    country?: string,
+    coverLarge?: string,
+    coverNormal?: string,
+    genres?: string[],
+    averageScore?: number,
+    isFavorite?: boolean
+    siteUrl?: string,
+    notes?: string,
+    progress?: number,
+    userScore?: number,
+    userStatus?: string, // MediaListStatus, 
+
+    studios?: string[],
+    staff?: string[],
+    characters?: string[],
+    //relations?: RelationshipLink[],
 }
 
-export interface UserAnimeListItem {
-    node: AnimeSchema,
-    list_status: AnimeUserListStatus
-}
-
-export interface UserAnimeList {
-    data: UserAnimeListItem[],
-    paging: {
-        previous: string,
-        next: string,
+export const toPluginFormat = (anime: MediaList, userStatus?: MediaListStatus): AnimeModel => {
+    const toDate = (date?: Maybe<FuzzyDate>): Date | undefined =>  {
+        if (date?.year && date?.month && date?.day) {
+            return new Date(date.year, date.month, date.day);
+        }
+        return undefined;
     }
+
+    return {
+        id: anime.id,
+        idMal: anime.media?.idMal ?? undefined,
+        englishTitle: anime.media?.title?.english ?? undefined,
+        romajiTitle: anime.media?.title?.romaji ?? undefined,
+        nativeTitle: anime.media?.title?.native ?? undefined,
+        synonyms: anime.media?.synonyms?.filter(Boolean) as string[] ?? undefined,
+        startDate: toDate(anime.media?.startDate),
+        endDate: toDate(anime.media?.endDate),
+        completedAt: toDate(anime.completedAt),
+        format: anime.media?.format ?? undefined,
+        status: anime.media?.status ?? undefined,
+        description: anime.media?.description ?? undefined,
+        episodes: anime.media?.episodes ?? undefined,
+        country: anime.media?.countryOfOrigin as string ?? undefined,
+        coverLarge: anime.media?.coverImage?.extraLarge ?? undefined,
+        coverNormal: anime.media?.coverImage?.large ?? undefined,
+        genres: anime.media?.genres?.filter(Boolean) as string[] ?? undefined,
+        averageScore: anime.media?.averageScore ?? undefined,
+        isFavorite: anime.media?.isFavourite ?? undefined,
+        siteUrl: anime.media?.siteUrl ?? undefined,
+        notes: anime.notes ?? undefined,
+        progress: anime.progress ?? undefined,
+        userScore: anime.score ?? undefined,
+        userStatus,
+
+        studios: anime.media?.studios?.nodes?.filter(Boolean).map(studio => studio?.name) as string[] ?? undefined,
+        staff: anime.media?.staff?.nodes?.filter(Boolean).map(staff => staff?.name?.full) as string[] ?? undefined,
+        characters: anime.media?.characters?.nodes?.filter(Boolean).map(character => character?.name?.full) as string[] ?? undefined,
+    }
+}
+
+export const listToPluginFormat = (list: MediaListGroup): AnimeModel[] => {
+    const userStatus: MediaListStatus | undefined = list.status ?? undefined;
+
+    if (!list.entries) {
+        return [];
+    }
+
+    const formattedList: AnimeModel[] = [];
+
+    for (const entry of list.entries) {
+        if (entry) formattedList.push(toPluginFormat(entry, userStatus))
+    }
+
+    return formattedList;
 }

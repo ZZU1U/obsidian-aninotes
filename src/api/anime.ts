@@ -1,102 +1,182 @@
+import type {Media, MediaListCollection, MediaListGroup, MediaList, Query} from "generated/anilist-schema"
+import { AnimeModel, listToPluginFormat } from "models/anime";
 import { requestUrl } from "obsidian";
-import { AnimeSchema, UserAnimeList, UserAnimeListItem } from "models/anime";
-import { MAL_ANIME_DETAIL_FIELDS, MAL_ANIMELIST_FIELDS } from "./constant";
+import { gqlData } from "tools/graphql";
 
+/**
+ * Options for controlling which heavy fields to include in the query
+ */
+export interface AnimeListOptions {
+    includeRelations?: boolean;
+    includeCharacters?: boolean;
+    includeStudios?: boolean;
+    includeStaff?: boolean;
+    includeTags?: boolean;
+    includeExternalLinks?: boolean;
+}
 
-export async function getUserAnimeList(token: string): Promise<UserAnimeList | undefined> {
-    const baseUrl = "https://api.myanimelist.net/v2/users/@me/animelist";
-    const query = new URLSearchParams({
-        fields: MAL_ANIMELIST_FIELDS,
-        limit: "100",
-    }).toString();
-    const initialUrl = `${baseUrl}?${query}`;
+/**
+ * Generates a GraphQL query with optional heavy fields
+ */
+function generateQuery(options: AnimeListOptions = {}): string {
+    const heavyFields = [];
+    
+    if (options.includeRelations) {
+        heavyFields.push('relations { edges { node { id title { english } } } }');
+    }
+    
+    if (options.includeCharacters) {
+        heavyFields.push('characters { nodes { id name { full } } }');
+    }
+    
+    if (options.includeStudios) {
+        heavyFields.push('studios { nodes { id name } }');
+    }
+    
+    if (options.includeStaff) {
+        heavyFields.push('staff { nodes { id name { full } } }');
+    }
+    
+    if (options.includeTags) {
+        heavyFields.push('tags { name }');
+    }
+    
+    if (options.includeExternalLinks) {
+        heavyFields.push('externalLinks { url site }');
+    }
 
-    const userList: UserAnimeList = {
-        data: [],
-        paging: {
-            next: initialUrl,
-            previous: "",
-        },
+    const entryFields = [
+        'id',
+        'status',
+        'startedAt { day month year }',
+        'completedAt { day month year }',
+        'progress',
+        'score',
+        'notes'
+    ].join('\n');
+    
+    const mediaFields = [
+        // Basic fields (always included)
+        'id',
+        'idMal',
+        'title { romaji english native }',
+        'startDate { day month year }',
+        'endDate { day month year }',
+        'format',
+        'status',
+        'description',
+        'episodes',
+        //'source',
+        'countryOfOrigin',
+        'coverImage { extraLarge large }',
+        'genres',
+        'synonyms',
+        'averageScore',
+        'isFavourite',
+        'siteUrl',
+        // Heavy fields (conditionally included)
+        ...heavyFields
+    ].join('\n');
+    
+    return `
+    query ($type: MediaType!, $userId: Int!) {
+        MediaListCollection(type: $type, userId: $userId) {
+            lists {
+                name
+                entries {
+                    ${entryFields}
+                    media {
+                        ${mediaFields}
+                    }
+                }
+            }
+        }
+    }
+    `;
+}
+
+/**
+ * Gets user's anime list with optional heavy fields and strong typing
+ * @param accessToken - Anilist API access token
+ * @param userId - Anilist user ID
+ * @param options - Options to include heavy fields like relations, characters, etc.
+ * @returns Promise with strongly typed anime list data
+ * 
+ * @example
+ * // Get basic anime list (fast, lightweight)
+ * const result = await getUserAnimeList(token, userId);
+ * console.log(result[0].media.title.romaji); // Fully typed!
+ * 
+ * @example
+ * // Get anime list with studios and relations
+ * const result = await getUserAnimeList(token, userId, { 
+ *   includeStudios: true, 
+ *   includeRelations: true 
+ * });
+ * 
+ * @example
+ * // Get everything (slow, heavy)
+ * const result = await getUserAnimeList(token, userId, {
+ *   includeRelations: true,
+ *   includeCharacters: true,
+ *   includeStudios: true,
+ *   includeStaff: true,
+ *   includeTags: true,
+ *   includeExternalLinks: true
+ * });
+ */
+export const getUserAnimeList = async (
+    accessToken: string, 
+    userId: number, 
+    options: AnimeListOptions = {}
+): Promise<AnimeModel[] | undefined> => {
+    // Generate query with specified options
+    const query = generateQuery(options);
+
+    const variables = {
+        type: "ANIME",
+        userId
     };
 
-    while (userList.paging.next) {
-        const tokenRes = await requestUrl({
-            url: userList.paging.next,
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` },
-            throw: false,
+    const url = 'https://graphql.anilist.co',
+        method = 'POST',
+        headers = {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body = JSON.stringify({
+            query: query,
+            variables: variables
         });
 
-        if (tokenRes.status < 200 || tokenRes.status >= 300) {
-            console.error("Get AnimeList error", tokenRes.status, tokenRes.text);
-            return undefined;
-        }
-
-        try {
-            const res = await tokenRes.json as UserAnimeList;
-            userList.data = userList.data.concat(res.data);
-            userList.paging.next = res.paging?.next;
-        } catch {
-            console.error("AnimeList was not a valid JSON:", tokenRes.text?.slice(0, 200));
-            return undefined;
-        } 
-    }
-
-    return userList;
-}
-
-/**
- * Get full anime details by ID. Use this when you need related_anime, related_manga, or other
- * fields that the user animelist endpoint does not return. The animelist only returns a subset
- * of anime node fields; related_anime and related_manga are only available from this endpoint.
- */
-export async function getAnimeDetails(
-    animeId: number,
-    token: string,
-    fields: string = MAL_ANIME_DETAIL_FIELDS
-): Promise<AnimeSchema | undefined> {
-    const url = `https://api.myanimelist.net/v2/anime/${animeId}?${new URLSearchParams({ fields }).toString()}`;
-    const res = await requestUrl({
-        url,
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-        throw: false,
-    });
-    if (res.status < 200 || res.status >= 300) return undefined;
     try {
-        return (await res.json) as AnimeSchema;
-    } catch {
-        return undefined;
-    }
-}
+        const response = await requestUrl({
+            url,
+            method,
+            headers,
+            body,
+        });
 
-/** Delay helper for rate limiting. */
-function delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
- * Enrich each list item with full anime details (including related_anime, related_manga).
- * Calls GET /anime/{id} once per entry; use a delayMs (e.g. 200–500) to avoid rate limits.
- */
-export async function enrichUserAnimeListWithDetails(
-    list: UserAnimeListItem[],
-    token: string,
-    options: { delayMs?: number; fields?: string } = {}
-): Promise<UserAnimeListItem[]> {
-    const { delayMs = 250, fields = MAL_ANIME_DETAIL_FIELDS } = options;
-    const out: UserAnimeListItem[] = [];
-    for (const item of list) {
-        const details = await getAnimeDetails(item.node.id, token, fields);
-        if (details) {
-            out.push({
-                node: { ...item.node, ...details },
-                list_status: item.list_status,
-            });
-        } else {
-            out.push(item);
+        if (!response.json || response.status !== 200) {
+            throw new Error(`GraphQL Error: Unknown error'}`);
         }
-        if (delayMs > 0) await delay(delayMs);
+
+        const data = gqlData<Query>(response).MediaListCollection;
+
+        if (!data?.lists) return undefined;
+
+        console.debug('Successfully fetched anime list:');
+        
+        const userAnimeList: AnimeModel[] = [];
+
+        for (const list of data.lists) {
+            if (list) userAnimeList.push(...listToPluginFormat(list))
+        }
+
+        return userAnimeList;
+    } catch (error) {
+        console.error('Failed to fetch anime list:', error);
+        throw new Error(`Anilist API request failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-    return out;
 }

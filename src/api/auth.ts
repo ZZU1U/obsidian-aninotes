@@ -1,96 +1,79 @@
-import crypto from "crypto";
+import { ALOAuthDataSchema, OAuthTokenSchema } from "models/auth";
+import { CLIENT_ID, CLIENT_SECRET, REDIRECT_URI } from "./constant";
 import { requestUrl } from "obsidian";
-import { PKCESchema, OAuthDataSchema, OAuthTokenSchema } from "models/auth";
-import { REDIRECT_URI, MAL_CLIENT_ID } from "./constant";
+import { UserInfo } from "models/auth";
+import { gqlData } from "tools/graphql";
 
-export function openInBrowser(url: string): void {
-	try {
-		const { shell } = require("electron") as { shell: { openExternal: (url: string) => Promise<void> } };
-		void shell.openExternal(url);
-	} catch {
-		window.open(url, "_blank", "noopener");
-	}
-}
-
-function generatePKCE(): PKCESchema {
-  const verifier = crypto.randomBytes(48).toString("base64url");
-  return { verifier, challenge: verifier };
-}
-
-export const createOAuthURL = (): OAuthDataSchema => {
-    const pkce = generatePKCE();
-    const state = crypto.randomBytes(16).toString("hex");
-
-    const authUrl =
-        "https://myanimelist.net/v1/oauth2/authorize" +
-        "?response_type=code" +
-        `&client_id=${MAL_CLIENT_ID}` +
+export const createALOAuthURL = (): ALOAuthDataSchema => {
+    const authUrl = 
+        'https://anilist.co/api/v2/oauth/authorize?' +
+        `client_id=${CLIENT_ID}` + 
         `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-        `&code_challenge=${encodeURIComponent(pkce.challenge)}` +
-        `&state=${encodeURIComponent(state)}` +
-        "&code_challenge_method=plain";
+        `&response_type=code`;
 
-    return {
-        url: authUrl,
-        pkce,
-        state
-    };
+    return { url: authUrl };
 }
 
-export async function serviceAuth(authUrl: OAuthDataSchema, code: string): Promise<OAuthTokenSchema | undefined> {
-    const body = new URLSearchParams({
-        client_id: MAL_CLIENT_ID,
-        grant_type: "authorization_code",
-        code,
-        redirect_uri: REDIRECT_URI,
-        code_verifier: authUrl.pkce.verifier,
-    }).toString();
-
-    const tokenRes = await requestUrl({
-        url: "https://myanimelist.net/v1/oauth2/token",
+export const exchangeALCode = async (code: string): Promise<OAuthTokenSchema | undefined> => {
+    const response = await requestUrl({
+        url: "https://anilist.co/api/v2/oauth/token",
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body,
-        throw: false,
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify({
+            "grant_type": "authorization_code",
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET,
+            "redirect_uri": REDIRECT_URI, // http://example.com/callback
+            "code": code, // The Authorization Code received previously
+        })
     });
 
-    if (tokenRes.status < 200 || tokenRes.status >= 300) {
-        console.error("Token error", tokenRes.status, tokenRes.text);
-        return undefined;
-    }
-
     try {
-        return await tokenRes.json as OAuthTokenSchema;
-    } catch {
-        console.error("Token response was not JSON:", tokenRes.text?.slice(0, 200));
+        return response.json as OAuthTokenSchema
+    } catch (err) {
+        console.error(err)
         return undefined;
     }
 }
 
-export async function updateToken(refresh_token: string): Promise<OAuthTokenSchema | undefined> {
-    const body = new URLSearchParams({
-        client_id: MAL_CLIENT_ID,
-        grant_type: "refresh_token",
-        refresh_token
-    }).toString();
-
-    const tokenRes = await requestUrl({
-        url: "https://myanimelist.net/v1/oauth2/token",
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body,
-        throw: false,
-    });
-
-    if (tokenRes.status < 200 || tokenRes.status >= 300) {
-        console.error("Token error", tokenRes.status, tokenRes.text);
-        return undefined;
+export const getUserInfo = async (accessToken: string): Promise<UserInfo | undefined> => {
+    const query = `
+    query {
+        Viewer {
+            id
+            name
+        }
     }
+    `;
+    const variables = { };
+
+    const url = 'https://graphql.anilist.co',
+        method = 'POST',
+        headers = {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body = JSON.stringify({
+            query: query,
+            variables: variables
+        });
+
+    const response = await requestUrl({
+        url,
+        method,
+        headers,
+        body,
+    })
 
     try {
-        return await tokenRes.json as OAuthTokenSchema;
-    } catch {
-        console.error("Token response was not JSON:", tokenRes.text?.slice(0, 200));
+        const data = gqlData<{ Viewer: UserInfo }>(response);
+        return data.Viewer;
+    } catch (err) {
+        console.error(err)
         return undefined;
-    } 
+    }
 }
