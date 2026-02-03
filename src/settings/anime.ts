@@ -15,7 +15,13 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 		href: "https://handlebarsjs.com/guide/"
 	});
 	descEl.appendChild(document.createTextNode(" engine so you can use Handlebars syntax.\
-		In the moment plugin does not support list values so in order to make templates with arrays use {{#each}} syntax and separate values with \":::\" sequence."));
+		In the moment plugin does not support list values so in order to make templates with arrays use {{#each}} syntax and separate values with \":::\" sequence.\
+		For more info on avaliable template values see "));
+	descEl.createEl("a", {
+		text: "here",
+		href: "https://github.com/ZZU1U/obsidian-aninotes/blob/c5b408357f15ea816de9d1ea8dd8249335cb029d/src/models/anime.ts#L5"
+	});
+	descEl.appendChild(document.createTextNode("."));
 
 	new Setting(containerEl)
 		.setName("Anime directory")
