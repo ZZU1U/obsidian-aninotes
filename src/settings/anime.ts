@@ -1,13 +1,21 @@
+/* eslint-disable obsidianmd/ui/sentence-case */
 import { Setting } from "obsidian";
 import type { SettingTab } from "../settings";
 
 export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
-	new Setting(containerEl).setName("Anime note").setHeading()
+	new Setting(containerEl).setName("Anime note tab").setHeading()
 	//containerEl.createEl("h2", { text: "Anime note" });
-	containerEl.createEl("p", {
-		text: "Define one frontmatter property per row. Value uses {{variable}} and {{variable|filter}} (e.g. {{title}}, {{genres|map:name|lines}}). Type: Text = single value, List = newline-separated values become a YAML list.",
+	const descEl = containerEl.createEl("p", {
 		cls: "setting-item-description",
 	});
+	descEl.appendChild(document.createTextNode("Anime template consists of frontmatter template and note body template.\
+		For rendering template strings used "));
+	descEl.createEl("a", {
+		text: "Handlebars",
+		href: "https://handlebarsjs.com/guide/"
+	});
+	descEl.appendChild(document.createTextNode(" engine so you can use Handlebars syntax.\
+		In the moment plugin does not support list values so in order to make templates with arrays use {{#each}} syntax and separate values with \":::\" sequence."));
 
 	new Setting(containerEl)
 		.setName("Anime directory")
@@ -15,7 +23,6 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 		.addText((el) => {
 			el
 				.setValue(this.plugin.settings.animeNoteT.fileDir)
-				// eslint-disable-next-line obsidianmd/ui/sentence-case
 				.setPlaceholder("AL/Anime")
 				.onChange(async (value) => {
 					this.plugin.settings.animeNoteT.fileDir = value;
@@ -39,7 +46,6 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 						await this.plugin.saveSettings();
 					});
 				text.inputEl.setCssProps({minWidth: "120px"});
-				//(text as unknown as { inputEl: HTMLInputElement }).inputEl.style.minWidth = "120px";
 			})
 			.addText((text) => {
 				text
@@ -66,7 +72,7 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 					});
 			})
 			.addButton((btn) => {
-				btn.setButtonText("Remove").onClick(async () => {
+				btn.setIcon("delete").onClick(async () => {
 					this.plugin.settings.animeNoteT.frontMatterT.splice(i, 1);
 					await this.plugin.saveSettings();
 					this.display();
@@ -97,7 +103,7 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 		.setClass("man-body-template")
 		.addTextArea((ta) => {
 			ta
-				.setPlaceholder("{{synopsis|default:}}\n\n# {{title}}")
+				.setPlaceholder("{{notes}}")
 				.setValue(this.plugin.settings.animeNoteT.noteBodyT)
 				.onChange(async (value) => {
 					this.plugin.settings.animeNoteT.noteBodyT = value;

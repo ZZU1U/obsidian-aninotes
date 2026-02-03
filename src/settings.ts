@@ -1,12 +1,12 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import MANPlugin from "./main";
 import { OAuthTokenSchema } from "models/auth";
-import type { FrontmatterEntry } from "./template";
-import { NoteTemplateSettings } from "./template/models";
+import { FrontmatterEntry, NoteTemplateSettings } from "./template/models";
 import { renderGeneral } from "./settings/general";
 import { renderAnime } from "./settings/anime";
 import { renderManga } from "./settings/manga";
 import { renderExperimental } from "./settings/experimental";
+import { FetchOptions } from "api/common";
 
 export type { FrontmatterEntry };
 
@@ -15,7 +15,6 @@ export interface MANSettings {
 	animeNoteT: NoteTemplateSettings,
 	mangaNoteT: NoteTemplateSettings,
 	dateFormat: string;
-	fetchRelatedAnimeManga: boolean;
 	syncOnStartup: boolean;
 	startupDelay: number;
 	backgroundSync: boolean;
@@ -25,6 +24,7 @@ export interface MANSettings {
 		id: number,
 		name: string
 	},
+	apiFetchOptions: FetchOptions
 }
 
 type SettingsTabId = "general" | "anime" | "manga" | "experimental";

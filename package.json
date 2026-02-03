@@ -23,12 +23,12 @@
 		"jiti": "2.6.1",
 		"tslib": "2.4.0",
 		"typescript": "^5.8.3",
-		"typescript-eslint": "8.35.1"
+		"typescript-eslint": "8.35.1",
+		"@graphql-tools/schema": "^10.0.31",
+		"graphql": "^16.12.0"
 	},
 	"dependencies": {
-		"@graphql-tools/schema": "^10.0.31",
-		"graphql": "^16.12.0",
-		"obsidian": "latest",
-		"open": "^11.0.0"
+		"handlebars": "^4.7.8",
+		"obsidian": "latest"
 	}
 }

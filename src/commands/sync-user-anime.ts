@@ -1,9 +1,11 @@
 import { Notice } from "obsidian";
 import MANPlugin from "main";
-import { processTemplate, buildFrontmatterFromEntries, buildNoteContent } from "template";
 import { getUserAnimeList } from "api/anime";
-import { getNoteFilename } from "tools/fs";
+import { getFilename } from "tools/fs";
 import path from "path";
+import { REQUIRED_FIELDS } from "template/constant";
+import hb from "template/engine";
+import { buildFrontmatterFromEntries } from "template/frontmatter";
 
 export default async function syncUserAnimeList(this: MANPlugin) {
     if (!this.settings.tokenAL?.access_token) {
@@ -16,29 +18,40 @@ export default async function syncUserAnimeList(this: MANPlugin) {
         return;
     }
 
-    const userList = await getUserAnimeList(this.settings.tokenAL.access_token, this.settings.accountALInfo.id);
+    const userList = await getUserAnimeList(
+        this.settings.tokenAL.access_token,
+        this.settings.accountALInfo.id,
+        this.settings.apiFetchOptions
+    );
 
     if (!userList) {
         new Notice("There seems to be a problem with your anime list");
         return;
     }
 
-    const fmt = this.settings.animeNoteT.frontMatterT;
+    const fmt = this.settings.animeNoteT.frontMatterT.concat(REQUIRED_FIELDS);
     const notesDir = this.settings.animeNoteT.fileDir;
-    const bodyT = this.settings.animeNoteT.noteBodyT;
+    const bodyT = hb.compile(this.settings.animeNoteT.noteBodyT);
 
     console.debug(fmt);
 
     for (const anime of userList) {
-        const context = anime as unknown as Record<string, unknown>;
-        console.debug(context);
-        //const fullPath = path.join(notesDir, getNoteFilename(anime));
-        const fullPath = processTemplate("{{romajiTitle|safe_name}} ({{format|title_case}}, {{id}}).md", context);
-        const noteContent = processTemplate(bodyT, context)
-        const file = await this.app.vault.create(fullPath, noteContent);
+        const fullPath = path.join(notesDir, getFilename(anime));
+        
+        let file = this.app.vault.getFileByPath(fullPath);
+
+        if (!file) {
+            const noteContent = bodyT(anime);
+            file = await this.app.vault.create(fullPath, noteContent);
+        }
+
+        const fmtData = buildFrontmatterFromEntries(fmt, anime);
+        console.debug(anime)
+        console.debug(fmtData)
+
         await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
             for (const prop of fmt) {
-                fm[prop.key] = processTemplate(prop.value, context);
+                fm[prop.key] = fmtData[prop.key];
             }
         });
     }

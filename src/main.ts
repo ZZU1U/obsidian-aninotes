@@ -4,7 +4,6 @@ import { ALOAuthDataSchema } from "models/auth";
 //import { renderTemplate, animeTemplateContext, buildFrontmatterFromEntries, buildNoteContent } from "template";
 import { DEFAULT_SETTINGS } from "./constant";
 import { exchangeALCode, getUserInfo } from "api/auth";
-import { getUserAnimeList } from "api/anime";
 import {
 	syncUserAnimeList
 } from "commands"

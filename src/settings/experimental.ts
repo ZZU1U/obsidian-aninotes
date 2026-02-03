@@ -1,5 +1,6 @@
 import { Setting } from "obsidian";
 import type { SettingTab } from "../settings";
+import type { FetchOptions } from "api/common";
 
 export function renderExperimental(this: SettingTab, containerEl: HTMLElement) {
 	new Setting(containerEl)
@@ -12,14 +13,17 @@ export function renderExperimental(this: SettingTab, containerEl: HTMLElement) {
 		cls: "setting-item-description",
 	});
 
-	new Setting(containerEl)
-		.setName("Fetch related anime & manga")
-		.setDesc("When syncing, fetch related_anime and related_manga for each entry (one API request per anime; slower).")
-		.addToggle((el) => {
-			el.setValue(this.plugin.settings.fetchRelatedAnimeManga);
-			el.onChange(async (value) => {
-				this.plugin.settings.fetchRelatedAnimeManga = value;
-				await this.plugin.saveSettings();
+	for (const key in this.plugin.settings.apiFetchOptions) {
+		const option = this.plugin.settings.apiFetchOptions[key as keyof FetchOptions];
+		new Setting(containerEl)
+			.setName(`Fetch ${key}`)
+			.setDesc(`When syncing, fetch ${key} for each entry (one API request per entry; slower).`)
+			.addToggle((el) => {
+				el.setValue(option);
+				el.onChange(async (value) => {
+					this.plugin.settings.apiFetchOptions[key as keyof FetchOptions] = value;
+					await this.plugin.saveSettings();
+				});
 			});
-		});
+	}
 }

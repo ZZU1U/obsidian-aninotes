@@ -6,10 +6,17 @@ export const DEFAULT_SETTINGS: MANSettings = {
     animeNoteT: DEFAULT_ANIME_T,
     mangaNoteT: DEFAULT_MANGA_T,
     dateFormat: "YYYY-MM-DD",
-    fetchRelatedAnimeManga: false,
     fetchUserDataAtStartup: true,
     syncOnStartup: false,
     startupDelay: 1000 * 5,
     backgroundSync: false,
-    backgroundSyncInterval: 1000 * 60 * 60
+    backgroundSyncInterval: 1000 * 60 * 60,
+    apiFetchOptions: {
+        includeRelations: false,
+        includeCharacters: false,
+        includeStudios: false,
+        includeStaff: false,
+        includeTags: false,
+        includeExternalLinks: false
+    }
 }

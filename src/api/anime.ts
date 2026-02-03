@@ -2,31 +2,21 @@ import type {Media, MediaListCollection, MediaListGroup, MediaList, Query} from 
 import { AnimeModel, listToPluginFormat } from "models/anime";
 import { requestUrl } from "obsidian";
 import { gqlData } from "tools/graphql";
+import { FetchOptions } from "./common";
 
-/**
- * Options for controlling which heavy fields to include in the query
- */
-export interface AnimeListOptions {
-    includeRelations?: boolean;
-    includeCharacters?: boolean;
-    includeStudios?: boolean;
-    includeStaff?: boolean;
-    includeTags?: boolean;
-    includeExternalLinks?: boolean;
-}
 
 /**
  * Generates a GraphQL query with optional heavy fields
  */
-function generateQuery(options: AnimeListOptions = {}): string {
+function generateQuery(options: FetchOptions): string {
     const heavyFields = [];
     
     if (options.includeRelations) {
-        heavyFields.push('relations { edges { node { id title { english } } } }');
+        heavyFields.push('relations { edges { relationType node { id title { userPreferred } } } }');
     }
     
     if (options.includeCharacters) {
-        heavyFields.push('characters { nodes { id name { full } } }');
+        heavyFields.push('characters { nodes { id name { userPreferred full native } } }');
     }
     
     if (options.includeStudios) {
@@ -34,7 +24,7 @@ function generateQuery(options: AnimeListOptions = {}): string {
     }
     
     if (options.includeStaff) {
-        heavyFields.push('staff { nodes { id name { full } } }');
+        heavyFields.push('staff { nodes { id name { userPreferred full native } } }');
     }
     
     if (options.includeTags) {
@@ -59,14 +49,13 @@ function generateQuery(options: AnimeListOptions = {}): string {
         // Basic fields (always included)
         'id',
         'idMal',
-        'title { romaji english native }',
+        'title { romaji english native userPreferred }',
         'startDate { day month year }',
         'endDate { day month year }',
         'format',
         'status',
         'description',
         'episodes',
-        //'source',
         'countryOfOrigin',
         'coverImage { extraLarge large }',
         'genres',
@@ -128,7 +117,7 @@ function generateQuery(options: AnimeListOptions = {}): string {
 export const getUserAnimeList = async (
     accessToken: string, 
     userId: number, 
-    options: AnimeListOptions = {}
+    options: FetchOptions
 ): Promise<AnimeModel[] | undefined> => {
     // Generate query with specified options
     const query = generateQuery(options);
@@ -166,7 +155,7 @@ export const getUserAnimeList = async (
 
         if (!data?.lists) return undefined;
 
-        console.debug('Successfully fetched anime list:');
+        console.debug('Successfully fetched anime list');
         
         const userAnimeList: AnimeModel[] = [];
 
