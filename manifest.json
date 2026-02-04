@@ -2,10 +2,10 @@
 	"id": "obsidian-man-sync",
 	"name": "MyAnimeNotes successor",
 	"version": "0.1.0",
-	"minAppVersion": "0.15.0",
+	"minAppVersion": "1.11.0",
 	"description": "Synchronize your MAL lists with local notes.",
 	"author": "zzu1u",
-	"authorUrl": "",
+	"authorUrl": "https://github.com/zzu1u",
 	"fundingUrl": "",
-	"isDesktopOnly": true
+	"isDesktopOnly": false
 }
