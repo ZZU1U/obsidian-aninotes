@@ -1,4 +1,4 @@
-import { Notice, ObsidianProtocolData, Plugin, TFile } from "obsidian";
+import { Notice, ObsidianProtocolData, Plugin } from "obsidian";
 import { MANSettings, SettingTab } from "./settings";
 import { ALOAuthDataSchema } from "models/auth";
 //import { renderTemplate, animeTemplateContext, buildFrontmatterFromEntries, buildNoteContent } from "template";

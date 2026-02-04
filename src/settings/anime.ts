@@ -34,15 +34,8 @@ class TypeSelectionModal extends Modal {
 			}
 
 			const iconEl = optionEl.createDiv({ cls: "man-type-icon" });
-			const iconSvg = this.getIconSvg(info.icon);
-			if (iconSvg) {
-				const tempDiv = document.createElement("div");
-				tempDiv.innerHTML = iconSvg;
-				const firstChild = tempDiv.firstChild;
-				if (firstChild) {
-					iconEl.appendChild(firstChild);
-				}
-			}
+			const icon = iconEl.createSpan({ cls: `lucide-${info.icon}` });
+			icon.setCssProps({ width: "16px", height: "16px" });
 
 			const textEl = optionEl.createDiv({ cls: "man-type-text" });
 			textEl.createEl("div", { text: info.name, cls: "man-type-name" });

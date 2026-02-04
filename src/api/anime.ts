@@ -1,4 +1,4 @@
-import type {Media, MediaListCollection, MediaListGroup, MediaList, Query} from "generated/anilist-schema"
+import type { MediaList, Query} from "generated/anilist-schema"
 import { requestUrl } from "obsidian";
 import { gqlData } from "tools/graphql";
 import { FetchOptions } from "./common";

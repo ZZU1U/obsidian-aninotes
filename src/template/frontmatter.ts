@@ -3,7 +3,6 @@
  * Minimal YAML stringify for Obsidian frontmatter (string, number, boolean, string[]).
  */
 
-import { REQUIRED_FIELDS } from "./constant";
 import { FrontmatterEntry } from "./models";
 import Handlebars from "./engine";
 import { MediaList } from "generated/anilist-schema";
