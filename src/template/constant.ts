@@ -8,24 +8,27 @@ export const REQUIRED_FIELDS: FrontmatterEntry[] = [
 export const DEFAULT_ANIME_T: NoteTemplateSettings = {
 	fileDir: "AL/Anime",
 	frontMatterT: [
-		{ key: "title", value: "{{title}}", type: "text" },
-		{ key: "media_type", value: "{{media_type}}", type: "text" },
-		{ key: "score", value: "{{score}}", type: "text" },
-		{ key: "watch_status", value: "{{watch_status}}", type: "text" },
-		{ key: "genres", value: "{{genres}}", type: "list" },
-		{ key: "studios", value: "{{studios}}", type: "list" },
+		{ key: "title", value: "{{{media.title.userPreferred}}}", type: "text" },
+		{ key: "id", value: "{{{media.id}}}", type: "text" },
+		{ key: "format", value: "{{{media.format}}}", type: "text" },
+		{ key: "score", value: "{{{score}}}", type: "text" },
+		{ key: "status", value: "{{{status}}}", type: "text" },
+		{ key: "genres", value: "{{#each media.genres}}{{{wikilink this}}}:::{{/each}}", type: "list" },
 	],
-	noteBodyT: "{{synopsis|callout:( \"summary\", \"Synopsis\", true)}} "
+	noteBodyT: "{{{notes}}}\n\n{{{callout \"summary\" \"Description\" media.description}}}"
 }
 
 export const DEFAULT_MANGA_T: NoteTemplateSettings = {
 	fileDir: "AL/Manga",
 	frontMatterT: [
-		{ key: "title", value: "{{title}}", type: "text" },
-		{ key: "mal_id", value: "{{id}}", type: "text" },
-		{ key: "score", value: "{{score}}", type: "text" },
+		{ key: "title", value: "{{{media.title.userPreferred}}}", type: "text" },
+		{ key: "id", value: "{{{media.id}}}", type: "text" },
+		{ key: "format", value: "{{{media.format}}}", type: "text" },
+		{ key: "score", value: "{{{score}}}", type: "text" },
+		{ key: "status", value: "{{{status}}}", type: "text" },
+		{ key: "genres", value: "{{#each media.genres}}{{{wikilink this}}}:::{{/each}}", type: "list" },
 	],
-	noteBodyT: "{{synopsis|callout:( \"summary\", \"Synopsis\", true)}} "
+	noteBodyT: "{{{notes}}}\n\n{{{callout \"summary\" \"Description\" media.description}}}"
 }
 
 export const FILE_NAME_TEMPLATE = "{{title|safename}} ({{media_type|capitalize}}, {{id}}).md"

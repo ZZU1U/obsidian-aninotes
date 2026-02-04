@@ -1,5 +1,4 @@
 import type {Media, MediaListCollection, MediaListGroup, MediaList, Query} from "generated/anilist-schema"
-import { AnimeModel, listToPluginFormat } from "models/anime";
 import { requestUrl } from "obsidian";
 import { gqlData } from "tools/graphql";
 import { FetchOptions } from "./common";
@@ -117,10 +116,12 @@ function generateQuery(options: FetchOptions): string {
 export const getUserAnimeList = async (
     accessToken: string, 
     userId: number, 
-    options: FetchOptions
-): Promise<AnimeModel[] | undefined> => {
+    options: FetchOptions,
+    useCustomRequest: boolean,
+    customRequest: string
+): Promise<MediaList[] | undefined> => {
     // Generate query with specified options
-    const query = generateQuery(options);
+    const query = useCustomRequest ? customRequest : generateQuery(options);
 
     const variables = {
         type: "ANIME",
@@ -157,10 +158,10 @@ export const getUserAnimeList = async (
 
         console.debug('Successfully fetched anime list');
         
-        const userAnimeList: AnimeModel[] = [];
+        const userAnimeList: MediaList[] = [];
 
         for (const list of data.lists) {
-            if (list) userAnimeList.push(...listToPluginFormat(list))
+            if (list && list.entries) userAnimeList.push(...list.entries.filter(Boolean) as MediaList[]);
         }
 
         return userAnimeList;

@@ -24,7 +24,11 @@ export interface MANSettings {
 		id: number,
 		name: string
 	},
-	apiFetchOptions: FetchOptions
+	apiFetchOptions: FetchOptions,
+	useCustomAnimeRequest: boolean,
+	useCustomMangaRequest: boolean,
+	customMangaRequest: string,
+	customAnimeRequest: string,
 }
 
 type SettingsTabId = "general" | "anime" | "manga" | "experimental";
@@ -59,7 +63,9 @@ export class SettingTab extends PluginSettingTab {
 		createTab("manga", "Manga");
 		createTab("experimental", "Experimental");
 
-		containerEl.createEl("hr");
+		containerEl.createEl("hr").setCssProps({
+			margin: "8px 0"
+		});
 
 		// Content
 		if (this.activeTab === "general") {

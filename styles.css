@@ -17,3 +17,165 @@ If your plugin does not need CSS, delete this file.
     background-color: var(--interactive-accent);
     color: var(--text-on-accent);
 }
+
+/* Frontmatter row drag and drop styles */
+.man-frontmatter-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 2px 0;
+    padding: 4px 0;
+    transition: all 0.15s ease;
+    min-height: 32px;
+    width: 100%;
+}
+
+.man-drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    line-height: 1;
+    opacity: 0.5;
+    transition: opacity 0.15s ease;
+    width: 16px;
+    flex-shrink: 0;
+}
+
+.man-drag-handle:hover {
+    opacity: 0.8;
+}
+
+.man-compact-setting {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.man-compact-setting .setting-item {
+    padding: 0;
+    min-height: 32px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.man-compact-setting .setting-item-info {
+    margin: 0;
+    display: none;
+}
+
+.man-compact-setting .setting-item-control {
+    margin: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.man-compact-setting input[type="text"],
+.man-compact-setting select {
+    padding: 4px 8px;
+    min-height: 24px;
+    font-size: 13px;
+    border: 1px solid var(--background-modifier-border);
+    background: transparent;
+    color: var(--text-normal);
+    flex: 1;
+}
+
+.man-compact-setting .dropdown {
+    min-height: 24px;
+}
+
+/* Remove button backgrounds and make them consistent */
+.man-compact-setting button {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 4px !important;
+    min-width: 24px !important;
+    height: 24px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    transition: background-color 0.15s ease;
+}
+
+.man-compact-setting button:hover {
+    background-color: var(--background-modifier-hover) !important;
+}
+
+.man-compact-setting button svg {
+    width: 14px !important;
+    height: 14px !important;
+    color: var(--text-muted);
+}
+
+.man-compact-setting button:hover svg {
+    color: var(--text-normal);
+}
+
+.man-frontmatter-row.man-dragging {
+    opacity: 0.6;
+    transform: rotate(1deg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: var(--background-secondary);
+}
+
+.man-frontmatter-row.man-drag-over {
+    background-color: var(--background-modifier-hover);
+    border: 1px dashed var(--interactive-accent);
+    border-radius: 3px;
+}
+
+/* Type selection modal styles */
+.man-type-option {
+    padding: 12px;
+    margin: 4px 0;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: all 0.2s ease;
+}
+
+.man-type-option:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.man-type-option.man-type-option-selected {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+}
+
+.man-type-icon svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.man-type-text {
+    flex: 1;
+}
+
+.man-type-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.man-type-description {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.man-type-option-selected .man-type-description {
+    color: var(--text-on-accent);
+    opacity: 0.8;
+}

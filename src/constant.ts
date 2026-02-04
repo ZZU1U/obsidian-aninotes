@@ -18,5 +18,9 @@ export const DEFAULT_SETTINGS: MANSettings = {
         includeStaff: false,
         includeTags: false,
         includeExternalLinks: false
-    }
+    },
+    useCustomAnimeRequest: false,
+    useCustomMangaRequest: false,
+    customMangaRequest: "",
+    customAnimeRequest: ""
 }

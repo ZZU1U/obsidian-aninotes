@@ -21,7 +21,9 @@ export default async function syncUserAnimeList(this: MANPlugin) {
     const userList = await getUserAnimeList(
         this.settings.tokenAL.access_token,
         this.settings.accountALInfo.id,
-        this.settings.apiFetchOptions
+        this.settings.apiFetchOptions,
+        this.settings.useCustomAnimeRequest,
+        this.settings.customAnimeRequest,
     );
 
     if (!userList) {
@@ -35,24 +37,28 @@ export default async function syncUserAnimeList(this: MANPlugin) {
 
     console.debug(fmt);
 
-    for (const anime of userList) {
-        const fullPath = path.join(notesDir, getFilename(anime));
-        
-        let file = this.app.vault.getFileByPath(fullPath);
+    try {
+        for (const anime of userList) {
+            console.debug(anime)
+            const fullPath = path.join(notesDir, getFilename(anime));
+            
+            let file = this.app.vault.getFileByPath(fullPath);
 
-        if (!file) {
-            const noteContent = bodyT(anime);
-            file = await this.app.vault.create(fullPath, noteContent);
-        }
-
-        const fmtData = buildFrontmatterFromEntries(fmt, anime);
-        console.debug(anime)
-        console.debug(fmtData)
-
-        await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
-            for (const prop of fmt) {
-                fm[prop.key] = fmtData[prop.key];
+            if (!file) {
+                const noteContent = bodyT(anime);
+                file = await this.app.vault.create(fullPath, noteContent);
             }
-        });
+
+            const fmtData = buildFrontmatterFromEntries(fmt, anime);
+
+            await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+                for (const prop of fmt) {
+                    fm[prop.key] = fmtData[prop.key];
+                }
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        new Notice("There was an error syncing your anime list. Check the console for more details.");
     }
 }

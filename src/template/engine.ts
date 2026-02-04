@@ -35,4 +35,9 @@ Handlebars.registerHelper('link', function (url: string, face: string) {
   return `[${face}](${url})`;
 })
 
+Handlebars.registerHelper('callout', function (type: string, title: string, content: string) {
+  const lines = content.split('\n');
+  return `> [!${type}]- ${title}\n` + lines.map(line => `> ${line}`).join('\n');
+})
+
 export default Handlebars
