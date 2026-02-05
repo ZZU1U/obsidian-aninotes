@@ -5,6 +5,7 @@ export interface FrontmatterEntry {
 }
 
 export interface NoteTemplateSettings {
+    fileNameT: string,
     fileDir: string,
     frontMatterT: FrontmatterEntry[],
     noteBodyT: string

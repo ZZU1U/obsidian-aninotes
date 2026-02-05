@@ -8,7 +8,8 @@ export function renderExperimental(this: SettingTab, containerEl: HTMLElement) {
 		.setHeading();
 
 	containerEl.createEl("p", {
-		text: "These settings are such that you only want to turn on if you know what you are doing as the tab name may suggest.",
+		text: "These settings are such that you only want to turn on if you know what you are doing as the tab name may suggest.\
+		Also some settings might just not work. So if you are not sure just don't touch them.",
 		cls: "setting-item-description",
 	});
 
@@ -59,4 +60,18 @@ export function renderExperimental(this: SettingTab, containerEl: HTMLElement) {
 				await this.plugin.saveSettings();
 			});
 		});
+
+	new Setting(containerEl)
+		.setName("Allow custom note names")
+		.setDesc("By default on every sync, plugin will try to keep note's name to it's template.\
+			Meaning if there's a note with fitting required fields but with wrong name, it will change it.\
+			If you don't want this behaviour, turn on this switch.")
+		.addToggle(tgl => {
+			tgl
+				.setValue(this.plugin.settings.allowUserNoteNames)
+				.onChange(async (val: boolean) => {
+					this.plugin.settings.allowUserNoteNames = val;
+					await this.plugin.saveSettings()
+				})
+		})
 }

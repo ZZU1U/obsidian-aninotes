@@ -156,8 +156,6 @@ export const getUserAnimeList = async (
 
         if (!data?.lists) return undefined;
 
-        console.debug('Successfully fetched anime list');
-        
         const userAnimeList: MediaList[] = [];
 
         for (const list of data.lists) {

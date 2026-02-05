@@ -5,7 +5,8 @@ import { ALOAuthDataSchema } from "models/auth";
 import { DEFAULT_SETTINGS } from "./constant";
 import { exchangeALCode, getUserInfo } from "api/auth";
 import {
-	syncUserAnimeList
+	syncUserAnimeList,
+	syncUserMangaList
 } from "commands"
 
 
@@ -15,53 +16,10 @@ export default class MANPlugin extends Plugin {
 	settingsTab?: SettingTab = undefined;
 
 	private syncUserAnimeList = syncUserAnimeList;
+	private syncUserMangaList = syncUserMangaList;
 
 	async onload() {
 		await this.loadSettings();
-		// this.addCommand({
-		// 	id: "sync-anime-library",
-		// 	name: "Sync anime lists",
-		// 	callback: async () => {
-		// 		if (!this.settings.accessToken) {
-		// 			new Notice("Not authenticated. Connect account in settings.");
-		// 			return;
-		// 		}
-		// 		const list = await getUserAnimeList(this.settings.accessToken);
-		// 		if (!list?.data.length) {
-		// 			new Notice("No anime list or list is empty.");
-		// 			return;
-		// 		}
-		// 		let data = list.data;
-		// 		if (this.settings.fetchRelatedAnimeManga) {
-		// 			new Notice("Fetching related anime/manga for each entry…");
-		// 			data = await enrichUserAnimeListWithDetails(data, this.settings.accessToken, { delayMs: 250 });
-		// 		}
-		// 		await this.updateAnimeFiles(data);
-		// 	},
-		// });
-
-		// this.addCommand({
-		// 	id: "sync-anime-library",
-		// 	name: "Sync anime lists",
-		// 	callback: async () => {
-		// 		if (this.settings.preferedAPI === 'anilist') {
-		// 			if (!this.settings.tokenAL) {
-		// 				new Notice("Log in first");
-		// 				return;
-		// 			}
-
-		// 			await getUserAnimeList(this.settings.tokenAL.access_token);
-		// 		}
-		// 	},
-		// });
-		this.addCommand({
-			id: 'test',
-			name: 'Test engine',
-			callback: async () => {
-				// Template engine test placeholder
-			}
-		});
-
 		this.addCommand({
 			id: 'sync-anime-list',
 			name: 'Sync user anime list',
@@ -70,42 +28,25 @@ export default class MANPlugin extends Plugin {
 			}
 		});
 
+		this.addCommand({
+			id: 'sync-manga-list',
+			name: 'Sync user manga list',
+			callback: async () => {
+				await this.syncUserMangaList();
+			}
+		});
+
+		this.addCommand({
+			id: 'sync-all-lists',
+			name: 'Sync all',
+			callback: async () => {
+				await this.syncUserAnimeList();
+				await this.syncUserMangaList();
+			}
+		})
+
 		this.settingsTab = new SettingTab(this.app, this);
 		this.addSettingTab(this.settingsTab);
-		//this.addSettingTab(new AnimeNoteSettingTab(this.app, this));
-
-		// this.registerObsidianProtocolHandler(
-		// 	'man-revive-sync/mal',
-		// 	async (params: ObsidianProtocolData) => {
-		// 		const code = params?.code;
-		// 		const state = params?.state;
-
-		// 		if (!code) {
-		// 			new Notice("Bad auth: no code returned");
-		// 			return;
-		// 		}
-		// 		if (!this.OAuthURLData) {
-		// 			new Notice("Bad auth: no auth data created");
-		// 			return;
-		// 		}
-		// 		if (state !== this.OAuthURLData.state) {
-		// 			new Notice("Bad auth: expired state");
-		// 			return;
-		// 		}
-				
-		// 		const token = await serviceAuth(this.OAuthURLData, code);
-
-		// 		if (!token) {
-		// 			new Notice("Bad auth: auth failed");
-		// 		} else {
-		// 			this.OAuthURLData = undefined;
-		// 			this.settings.accessToken = token.access_token;
-		// 			this.settings.refreshToken = token.refresh_token;
-		// 			await this.saveSettings()
-		// 			new Notice("Auth completed");
-		// 		}
-		// 	}
-		// )
 
 		this.registerObsidianProtocolHandler(
 			'man-revive-sync/al',

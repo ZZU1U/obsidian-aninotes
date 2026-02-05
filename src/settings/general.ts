@@ -38,16 +38,16 @@ export function renderGeneral(this: SettingTab, containerEl: HTMLElement) {
 		this.accountAL.setDesc(`User: ${userInfo.name}; id: ${userInfo.id}`)
 	}
 
-	new Setting(containerEl)
-		.setName("Fetch API user info")
-		.setDesc("Allow plugin to fetch user name and ID when opening settings page.\
-			If turned off, will display data that was fetched last time.")
-		.addToggle(tgl => {
-			tgl
-				.setValue(this.plugin.settings.fetchUserDataAtStartup)
-				.onChange(async (val: boolean) => {
-					this.plugin.settings.fetchUserDataAtStartup = val;
-					await this.plugin.saveSettings()
-				})
-		})
+	// new Setting(containerEl)
+	// 	.setName("Fetch API user info")
+	// 	.setDesc("Allow plugin to fetch user name and ID on Obsidian startup.\
+	// 		If turned off, will display data that was fetched last time.")
+	// 	.addToggle(tgl => {
+	// 		tgl
+	// 			.setValue(this.plugin.settings.fetchUserDataAtStartup)
+	// 			.onChange(async (val: boolean) => {
+	// 				this.plugin.settings.fetchUserDataAtStartup = val;
+	// 				await this.plugin.saveSettings()
+	// 			})
+	// 	})
 }

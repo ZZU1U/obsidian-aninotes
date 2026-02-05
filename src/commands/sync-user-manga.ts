@@ -1,13 +1,12 @@
-import { Notice, TFile } from "obsidian";
+import { Notice } from "obsidian";
 import MANPlugin from "main";
-import { getUserAnimeList } from "api/anime";
-import { getFilename } from "tools/fs";
+import { getUserMangaList } from "api/manga";
 import { REQUIRED_FIELDS } from "template/constant";
 import hb from "template/engine";
 import { buildFrontmatterFromEntries } from "template/frontmatter";
 import type { MediaList } from "generated/anilist-schema";
 
-export default async function syncUserAnimeList(this: MANPlugin) {
+export default async function syncUserMangaList(this: MANPlugin) {
     if (!this.settings.tokenAL?.access_token) {
         new Notice("You need to log in first");
         return;
@@ -18,26 +17,26 @@ export default async function syncUserAnimeList(this: MANPlugin) {
         return;
     }
 
-    const userList = await getUserAnimeList(
+    const userList = await getUserMangaList(
         this.settings.tokenAL.access_token,
         this.settings.accountALInfo.id,
         this.settings.apiFetchOptions,
-        this.settings.useCustomAnimeRequest,
-        this.settings.customAnimeRequest,
+        this.settings.useCustomMangaRequest,
+        this.settings.customMangaRequest,
     );
 
     if (!userList) {
-        new Notice("There seems to be a problem with your anime list");
+        new Notice("There seems to be a problem with your manga list");
         return;
     }
 
-    const fetchedAnimeByID: Record<number, MediaList> = {};
-    for (const anime of userList) {
-        if (anime.media?.id) fetchedAnimeByID[anime.media.id] = anime;
+    const fetchedMangaByID: Record<number, MediaList> = {};
+    for (const manga of userList) {
+        if (manga.media?.id) fetchedMangaByID[manga.media.id] = manga;
     }
 
-    const notesDir = this.settings.animeNoteT.fileDir;
-    const fileName = hb.compile(this.settings.animeNoteT.fileNameT);
+    const notesDir = this.settings.mangaNoteT.fileDir;
+    const fileName = hb.compile(this.settings.mangaNoteT.fileNameT);
 
     if (!this.settings.allowUserNoteNames) {
         for (const file of (await this.app.vault.adapter.list(notesDir)).files) {
@@ -45,31 +44,31 @@ export default async function syncUserAnimeList(this: MANPlugin) {
             if (!tfile) continue;
 
             await this.app.fileManager.processFrontMatter(tfile, (fm: Record<string, unknown>) => {
-                if (fm.man === "man" && fm.id && fetchedAnimeByID[fm.id as number]) {
-                    const noteAnime = fetchedAnimeByID[fm.id as number];
-                    if (tfile.name !== fileName(noteAnime)) {
-                        this.app.vault.rename(tfile, `${notesDir}/${fileName(noteAnime)}`).catch(()=>{});
+                if (fm.man === "man" && fm.id && fetchedMangaByID[fm.id as number]) {
+                    const noteManga = fetchedMangaByID[fm.id as number];
+                    if (tfile.name !== fileName(noteManga)) {
+                        this.app.vault.rename(tfile, `${notesDir}/${fileName(noteManga)}`).catch(()=>{});
                     }
                 }
             });
         }
     }
 
-    const fmt = this.settings.animeNoteT.frontMatterT.concat(REQUIRED_FIELDS);
-    const bodyT = hb.compile(this.settings.animeNoteT.noteBodyT);
+    const fmt = this.settings.mangaNoteT.frontMatterT.concat(REQUIRED_FIELDS);
+    const bodyT = hb.compile(this.settings.mangaNoteT.noteBodyT);
 
     try {
-        for (const anime of userList) {
-            const fullPath = `${notesDir}/${fileName(anime)}`;
+        for (const manga of userList) {
+            const fullPath = `${notesDir}/${fileName(manga)}`;
             
             let file = this.app.vault.getFileByPath(fullPath);
 
             if (!file) {
-                const noteContent = bodyT(anime);
+                const noteContent = bodyT(manga);
                 file = await this.app.vault.create(fullPath, noteContent);
             }
 
-            const fmtData = buildFrontmatterFromEntries(fmt, anime);
+            const fmtData = buildFrontmatterFromEntries(fmt, manga);
 
             await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
                 for (const prop of fmt) {
@@ -79,6 +78,6 @@ export default async function syncUserAnimeList(this: MANPlugin) {
         }
     } catch (error) {
         console.error(error);
-        new Notice("There was an error syncing your anime list. Check the console for more details.");
+        new Notice("There was an error syncing your manga list. Check the console for more details.");
     }
 }

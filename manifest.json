@@ -1,11 +1,1 @@
-{
-	"id": "obsidian-man-sync",
-	"name": "MyAnimeNotes successor",
-	"version": "0.1.0",
-	"minAppVersion": "1.11.0",
-	"description": "Synchronize your MAL lists with local notes.",
-	"author": "zzu1u",
-	"authorUrl": "https://github.com/zzu1u",
-	"fundingUrl": "",
-	"isDesktopOnly": false
-}
+{"id":"obsidian-aninotes","name":"AniNotes","version":"0.1.0","minAppVersion":"1.11.0","description":"Synchronize your AL lists with local notes.","author":"zzu1u","authorUrl":"https://github.com/zzu1u","fundingUrl":"","isDesktopOnly":false}

@@ -22,5 +22,6 @@ export const DEFAULT_SETTINGS: MANSettings = {
     useCustomAnimeRequest: false,
     useCustomMangaRequest: false,
     customMangaRequest: "",
-    customAnimeRequest: ""
+    customAnimeRequest: "",
+    allowUserNoteNames: false
 }

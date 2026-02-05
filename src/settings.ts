@@ -29,6 +29,7 @@ export interface MANSettings {
 	useCustomMangaRequest: boolean,
 	customMangaRequest: string,
 	customAnimeRequest: string,
+	allowUserNoteNames: boolean,
 }
 
 type SettingsTabId = "general" | "anime" | "manga" | "experimental";
