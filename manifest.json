@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-aninotes",
 	"name": "AniNotes",
-	"version": "0.1.2",
+	"version": "1.0.0",
 	"minAppVersion": "1.11.0",
 	"description": "Synchronize your AL lists with local notes.",
 	"author": "zzu1u",

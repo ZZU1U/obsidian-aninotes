@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-aninotes",
-	"version": "0.1.2",
+	"version": "1.0.0",
 	"description": "Plugin to sync AniList anime & manga lists to your obsidian vault.",
 	"main": "main.js",
 	"type": "module",
