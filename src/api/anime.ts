@@ -7,7 +7,7 @@ import { FetchOptions } from "./common";
 /**
  * Generates a GraphQL query with optional heavy fields
  */
-function generateQuery(options: FetchOptions): string {
+export function generateQuery(options: FetchOptions): string {
     const heavyFields = [];
     
     if (options.includeRelations) {
@@ -122,6 +122,8 @@ export const getUserAnimeList = async (
 ): Promise<MediaList[] | undefined> => {
     // Generate query with specified options
     const query = useCustomRequest ? customRequest : generateQuery(options);
+        console.log(query);
+
 
     const variables = {
         type: "ANIME",

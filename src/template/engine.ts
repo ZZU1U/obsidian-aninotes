@@ -1,7 +1,12 @@
 import { FuzzyDate } from "generated/anilist-schema";
+import { registerPartial } from "handlebars";
+
+type HandlebarsHelperFunction = (...args: unknown[]) => unknown;
+type HandlebarsTemplateFunction = string | HandlebarsHelperFunction;
 
 type HandlebarsInstance = {
-	registerHelper: (name: string, fn: Function) => void;
+	registerHelper: (name: string, fn: HandlebarsHelperFunction) => void;
+	registerPartial: (name: string, fn: HandlebarsTemplateFunction) => void;
 	compile: (template: string) => (data: Record<string, unknown>) => string;
 };
 
@@ -72,7 +77,7 @@ function registerHelpers() {
 
 // Export API that matches Handlebars but with dynamic loading
 const HandlebarsDynamic = {
-	registerHelper: async (name: string, fn: Function) => {
+	registerHelper: async (name: string, fn: HandlebarsHelperFunction) => {
 		const hb = await getHandlebars();
 		hb.registerHelper(name, fn);
 	},
@@ -80,6 +85,11 @@ const HandlebarsDynamic = {
 	compile: async (template: string) => {
 		const hb = await getHandlebars();
 		return hb.compile(template);
+	},
+
+	registerPartial: async (name: string, fn: HandlebarsTemplateFunction) => {
+		const hb = await getHandlebars();
+		hb.registerPartial(name, fn);
 	}
 };
 

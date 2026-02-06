@@ -7,7 +7,7 @@ export const REQUIRED_FIELDS: FrontmatterEntry[] = [
 
 export const DEFAULT_ANIME_T: NoteTemplateSettings = {
 	fileDir: "AL/Anime",
-	fileNameT: "{{{title|safename}}} ({{{media_type|capitalize}}}, {{{id}}}).md",
+	fileNameT: "{{{safename title.userPreferred}}} ({{{capital format}}}, {{{id}}}).md",
 	frontMatterT: [
 		{ key: "title", value: "{{{media.title.userPreferred}}}", type: "text" },
 		{ key: "format", value: "{{{media.format}}}", type: "text" },
@@ -20,7 +20,7 @@ export const DEFAULT_ANIME_T: NoteTemplateSettings = {
 
 export const DEFAULT_MANGA_T: NoteTemplateSettings = {
 	fileDir: "AL/Manga",
-	fileNameT: "{{{title|safename}}} ({{{media_type|capitalize}}}, {{{id}}}).md",
+	fileNameT: "{{{safename title.userPreferred}}} ({{{capital format}}}, {{{id}}}).md",
 	frontMatterT: [
 		{ key: "title", value: "{{{media.title.userPreferred}}}", type: "text" },
 		{ key: "format", value: "{{{media.format}}}", type: "text" },

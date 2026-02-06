@@ -18,11 +18,11 @@ class TypeSelectionModal extends Modal {
 		contentEl.createEl("h2", { text: "Select Property Type" });
 
 		const typeDescriptions = {
-			text: { icon: "file-text", name: "Text", description: "Plain text value. Use for single-line text like title, status, etc." },
-			list: { icon: "list", name: "List", description: "Array of values. Use for multiple items like genres, tags, etc." },
-			number: { icon: "hash", name: "Number", description: "Numeric value. Use for scores, ratings, episode count, etc." },
+			text: { icon: "file-text", name: "Text", description: "Plain text value. Use for single-line text like title, status" },
+			list: { icon: "list", name: "List", description: "Array of values. Use for multiple items like genres, tags" },
+			number: { icon: "hash", name: "Number", description: "Numeric value. Use for scores, ratings, episode count" },
 			checkbox: { icon: "check-square", name: "Checkbox", description: "Boolean value (true/false). Use for yes/no options." },
-			date: { icon: "calendar", name: "Date", description: "Date value. Use for dates like start date, completion date, etc." },
+			date: { icon: "calendar", name: "Date", description: "Date value. Use for dates like start date, completion date" },
 			datetime: { icon: "clock", name: "Date & Time", description: "Date and time value. Use for timestamps with time." }
 		};
 
@@ -101,7 +101,7 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 	//containerEl.createEl("h2", { text: "Anime note" });
 	new Setting(containerEl)
 		.setName("Note name")
-		.setDesc("Template for created note filename (must end with .md)")
+		.setDesc("Template for created note filename (must end with .md). Context of this note is class Media from Anilist API.")
 		.addText((el) => {
 			el
 				.setValue(this.plugin.settings.animeNoteT.fileNameT)
@@ -115,7 +115,7 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 
 	new Setting(containerEl)
 		.setName("Anime directory")
-		.setDesc("Directory for anime notes")
+		.setDesc("Directory for anime notes. There is no template applied.")
 		.addText((el) => {
 			el
 				.setValue(this.plugin.settings.animeNoteT.fileDir)
@@ -145,7 +145,8 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 		text: "official AniList schemas",
 		href: "https://studio.apollographql.com/sandbox/explorer?endpoint=https://graphql.anilist.co"
 	});
-	descEl.appendChild(document.createTextNode(". IMPORTANT: By default template engine generates html result so to avoid html escaping use triple curly braces {{{filter thingie}}}}."));
+	descEl.appendChild(document.createTextNode(". IMPORTANT: By default template engine generates html result so to avoid html escaping use triple curly braces {{{function thingie}}}}.\
+		Context of all the following templates is class MediaList from Anilist API."));
 
 	// Display required fields (non-editable, non-draggable)
 	const requiredContainer = containerEl.createDiv({ cls: "man-required-fields" });
@@ -294,7 +295,7 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 			})
 			.addText((text) => {
 				text
-					.setPlaceholder("{{title}} or {{genres|map:name|lines}}")
+					.setPlaceholder("{{{media.title.romaji}}} or {{{media.status}}}")
 					.setValue(entry.value)
 					.onChange(async (value) => {
 						entry.value = value;

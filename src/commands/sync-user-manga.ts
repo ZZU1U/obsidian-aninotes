@@ -46,8 +46,8 @@ export default async function syncUserMangaList(this: MANPlugin) {
             await this.app.fileManager.processFrontMatter(tfile, (fm: Record<string, unknown>) => {
                 if (fm.man === "man" && fm.id && fetchedMangaByID[fm.id as number]) {
                     const noteManga = fetchedMangaByID[fm.id as number];
-                    if (tfile.name !== fileName(noteManga!)) {
-                        this.app.vault.rename(tfile, `${notesDir}/${fileName(noteManga!)}`).catch(()=>{});
+                    if (tfile.name !== fileName(noteManga!.media!)) {
+                        this.app.vault.rename(tfile, `${notesDir}/${fileName(noteManga!.media!)}`).catch(()=>{});
                     }
                 }
             });
@@ -59,7 +59,7 @@ export default async function syncUserMangaList(this: MANPlugin) {
 
     try {
         for (const manga of userList) {
-            const fullPath = `${notesDir}/${fileName(manga)}`;
+            const fullPath = `${notesDir}/${fileName(manga.media!)}`;
             
             let file = this.app.vault.getFileByPath(fullPath);
 

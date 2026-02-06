@@ -7,7 +7,7 @@ import { FetchOptions } from "./common";
 /**
  * Generates a GraphQL query with optional heavy fields
  */
-function generateQuery(options: FetchOptions): string {
+export function generateQuery(options: FetchOptions): string {
     const heavyFields = [];
     
     if (options.includeRelations) {

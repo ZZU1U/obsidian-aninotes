@@ -1,6 +1,8 @@
 import { Setting } from "obsidian";
 import type { SettingTab } from "../settings";
 import type { FetchOptions } from "api/common";
+import { generateQuery as generateAnimeQuery } from "api/anime";
+import { generateQuery as generateMangaQuery } from "api/manga";
 
 export function renderExperimental(this: SettingTab, containerEl: HTMLElement) {
 	new Setting(containerEl)
@@ -30,7 +32,15 @@ export function renderExperimental(this: SettingTab, containerEl: HTMLElement) {
 	new Setting(containerEl)
 		.setName("Use custom anime request")
 		.setDesc("When syncing, use a custom anime request instead of the one constructed by plugin.")
-		.addToggle((el) => {
+		.addButton((btn) => {
+			btn.setIcon("book-dashed")
+			btn.setTooltip("Get current request")
+			btn.onClick(async () => {
+				this.plugin.settings.customAnimeRequest = generateAnimeQuery(this.plugin.settings.apiFetchOptions);
+				await this.plugin.saveSettings();
+				this.display();
+			})
+		}).addToggle((el) => {
 			el.setValue(this.plugin.settings.useCustomAnimeRequest);
 			el.onChange(async (value) => {
 				this.plugin.settings.useCustomAnimeRequest = value;
@@ -47,7 +57,15 @@ export function renderExperimental(this: SettingTab, containerEl: HTMLElement) {
 	new Setting(containerEl)
 		.setName("Use custom manga request")
 		.setDesc("When syncing, use a custom manga request instead of the one constructed by plugin.")
-		.addToggle((el) => {
+		.addButton((btn) => {
+			btn.setIcon("book-dashed")
+			btn.setTooltip("Get current request")
+			btn.onClick(async () => {
+				this.plugin.settings.customMangaRequest = generateMangaQuery(this.plugin.settings.apiFetchOptions);
+				await this.plugin.saveSettings();
+				this.display();
+			})
+		}).addToggle((el) => {
 			el.setValue(this.plugin.settings.useCustomMangaRequest);
 			el.onChange(async (value) => {
 				this.plugin.settings.useCustomMangaRequest = value;
@@ -62,8 +80,9 @@ export function renderExperimental(this: SettingTab, containerEl: HTMLElement) {
 		});
 
 	new Setting(containerEl)
-		.setName("Allow custom note names")
-		.setDesc("By default on every sync, plugin will try to keep note's name to it's template.\
+		.setName("Allow custom note names") // #TODO
+		// eslint-disable-next-line obsidianmd/ui/sentence-case
+		.setDesc("NOT IMPLEMENTED YET. By default on every sync, plugin will try to keep note's name to it's template.\
 			Meaning if there's a note with fitting required fields but with wrong name, it will change it.\
 			If you don't want this behaviour, turn on this switch.")
 		.addToggle(tgl => {

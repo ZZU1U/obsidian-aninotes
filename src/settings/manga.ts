@@ -101,7 +101,7 @@ export function renderManga(this: SettingTab, containerEl: HTMLElement) {
 	//containerEl.createEl("h2", { text: "Manga note" });
 	new Setting(containerEl)
 		.setName("Note name")
-		.setDesc("Template for created note filename (must end with .md)")
+		.setDesc("Template for created note filename (must end with .md). Context of template is class Media from Anilist API.")
 		.addText((el) => {
 			el
 				.setValue(this.plugin.settings.mangaNoteT.fileNameT)
@@ -115,7 +115,7 @@ export function renderManga(this: SettingTab, containerEl: HTMLElement) {
 
 	new Setting(containerEl)
 		.setName("Manga directory")
-		.setDesc("Directory for manga notes")
+		.setDesc("Directory for manga notes. There is no template applied.")
 		.addText((el) => {
 			el
 				.setValue(this.plugin.settings.mangaNoteT.fileDir)
@@ -145,7 +145,8 @@ export function renderManga(this: SettingTab, containerEl: HTMLElement) {
 		text: "official AniList schemas",
 		href: "https://studio.apollographql.com/sandbox/explorer?endpoint=https://graphql.anilist.co"
 	});
-	descEl.appendChild(document.createTextNode(". IMPORTANT: By default template engine generates html result so to avoid html escaping use triple curly braces {{{filter thingie}}}}."));
+	descEl.appendChild(document.createTextNode(". IMPORTANT: By default template engine generates html result so to avoid html escaping use triple curly braces {{{filter thingie}}}}.\
+		Context of following templates is class MediaList from AniList API."));
 
 	// Display required fields (non-editable, non-draggable)
 	const requiredContainer = containerEl.createDiv({ cls: "man-required-fields" });
@@ -294,7 +295,7 @@ export function renderManga(this: SettingTab, containerEl: HTMLElement) {
 			})
 			.addText((text) => {
 				text
-					.setPlaceholder("{{title}} or {{genres|map:name|lines}}")
+					.setPlaceholder("{{{media.title.romaji}}} or {{{media.status}}}")
 					.setValue(entry.value)
 					.onChange(async (value) => {
 						entry.value = value;
