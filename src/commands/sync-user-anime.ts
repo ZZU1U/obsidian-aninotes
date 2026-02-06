@@ -1,7 +1,6 @@
-import { Notice, TFile } from "obsidian";
+import { Notice } from "obsidian";
 import MANPlugin from "main";
 import { getUserAnimeList } from "api/anime";
-import { getFilename } from "tools/fs";
 import { REQUIRED_FIELDS } from "template/constant";
 import hb from "template/engine";
 import { buildFrontmatterFromEntries } from "template/frontmatter";

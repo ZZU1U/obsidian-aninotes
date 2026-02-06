@@ -1,3 +1,4 @@
+import { FuzzyDate } from "generated/anilist-schema";
 import Handlebars from "handlebars";
 
 Handlebars.registerHelper('upper', function (str: string) {
@@ -33,6 +34,10 @@ Handlebars.registerHelper('wikilink', function (val: string) {
 
 Handlebars.registerHelper('link', function (url: string, face: string) {
   return `[${face}](${url})`;
+})
+
+Handlebars.registerHelper('date', function (fzDate: FuzzyDate) {
+  return `${fzDate.year}-${fzDate.month}-${fzDate.day}`;
 })
 
 Handlebars.registerHelper('callout', function (type: string, title: string, content: string) {
