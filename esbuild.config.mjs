@@ -37,8 +37,14 @@ const context = await esbuild.context({
 	logLevel: "info",
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
-	outfile: "main.js",
 	minify: prod,
+	outfile: "main.js",
+	// Additional optimizations
+	drop: prod ? ["console", "debugger"] : [],
+	keepNames: false,
+	// Optimize for smaller bundle size
+	platform: "browser",
+	mainFields: ["browser", "module", "main"],
 });
 
 if (prod) {

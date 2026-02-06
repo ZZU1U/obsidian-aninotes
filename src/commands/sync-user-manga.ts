@@ -36,7 +36,7 @@ export default async function syncUserMangaList(this: MANPlugin) {
     }
 
     const notesDir = this.settings.mangaNoteT.fileDir;
-    const fileName = hb.compile(this.settings.mangaNoteT.fileNameT);
+    const fileName = await hb.compile(this.settings.mangaNoteT.fileNameT);
 
     if (!this.settings.allowUserNoteNames) {
         for (const file of (await this.app.vault.adapter.list(notesDir)).files) {
@@ -46,8 +46,8 @@ export default async function syncUserMangaList(this: MANPlugin) {
             await this.app.fileManager.processFrontMatter(tfile, (fm: Record<string, unknown>) => {
                 if (fm.man === "man" && fm.id && fetchedMangaByID[fm.id as number]) {
                     const noteManga = fetchedMangaByID[fm.id as number];
-                    if (tfile.name !== fileName(noteManga)) {
-                        this.app.vault.rename(tfile, `${notesDir}/${fileName(noteManga)}`).catch(()=>{});
+                    if (tfile.name !== fileName(noteManga!)) {
+                        this.app.vault.rename(tfile, `${notesDir}/${fileName(noteManga!)}`).catch(()=>{});
                     }
                 }
             });
@@ -55,7 +55,7 @@ export default async function syncUserMangaList(this: MANPlugin) {
     }
 
     const fmt = this.settings.mangaNoteT.frontMatterT.concat(REQUIRED_FIELDS);
-    const bodyT = hb.compile(this.settings.mangaNoteT.noteBodyT);
+    const bodyT = await hb.compile(this.settings.mangaNoteT.noteBodyT);
 
     try {
         for (const manga of userList) {
@@ -68,7 +68,7 @@ export default async function syncUserMangaList(this: MANPlugin) {
                 file = await this.app.vault.create(fullPath, noteContent);
             }
 
-            const fmtData = buildFrontmatterFromEntries(fmt, manga);
+            const fmtData = await buildFrontmatterFromEntries(fmt, manga);
 
             await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
                 for (const prop of fmt) {

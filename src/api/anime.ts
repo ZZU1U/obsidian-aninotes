@@ -11,7 +11,7 @@ function generateQuery(options: FetchOptions): string {
     const heavyFields = [];
     
     if (options.includeRelations) {
-        heavyFields.push('relations { edges { relationType node { id title { userPreferred } } } }');
+        heavyFields.push('relations { edges { relationType node { id title { userPreferred } format } } }');
     }
     
     if (options.includeCharacters) {

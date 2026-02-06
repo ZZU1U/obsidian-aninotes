@@ -7,17 +7,17 @@ import { FrontmatterEntry } from "./models";
 import Handlebars from "./engine";
 import { MediaList } from "generated/anilist-schema";
 
-export function buildFrontmatterFromEntries(
+export async function buildFrontmatterFromEntries(
 	entries: FrontmatterEntry[],
 	context: MediaList,
-): Record<string, unknown> {
+): Promise<Record<string, unknown>> {
 	const out: Record<string, unknown> = {};
 
 	for (const entry of entries) {
 		const key = entry.key.trim();
 		if (!key) continue;
 
-		out[key] = Handlebars.compile(entry.value)(context);
+		out[key] = (await Handlebars.compile(entry.value))(context);
 		
 		if (entry.type === "list" && out[key] && typeof out[key] === "string" && out[key].includes(":::")) {
 			out[key] = out[key].split(":::").map(s => s.trim()).filter(Boolean);
