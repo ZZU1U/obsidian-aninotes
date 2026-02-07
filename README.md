@@ -18,23 +18,15 @@ AniNotes is an Obsidian plugin that synchronizes your AniList anime and manga li
 
 ## 📦 Installation
 
-### Method 1: Obsidian Community Plugins (Recommended)
-1. Open Obsidian Settings → Community Plugins
-2. Browse for "AniNotes" or search for "obsidian-aninotes"
-3. Click Install and then Enable
+Easiest way to install plugin is to use BRAT.
 
-### Method 2: Manual Installation
-1. Download the latest release from the [Releases page](https://github.com/zzu1u/obsidian-aninotes/releases)
-2. Extract the downloaded ZIP file
-3. Move the extracted folder to `<your-vault>/.obsidian/plugins/`
-4. Rename the folder to `obsidian-aninotes` if needed
-5. Enable the plugin in Obsidian Settings → Community Plugins
+Right now plugin is only available as source code. You can install it by downloading source code and placing it in your obsidian plugins folder.
 
 ## ⚙️ Configuration
 
 ### Initial Setup
 1. After installing, open AniNotes settings in Obsidian Settings → Community Plugins → AniNotes
-2. Enter your AniList username
+2. Log in with your AniList account
 3. Configure your preferred sync settings:
    - Sync frequency (manual, daily, weekly)
    - Note folder location
@@ -62,7 +54,31 @@ AniNotes uses Handlebars templates for note creation. You can customize:
 - Command palette usage
 -->
 
+### Avaliable helpers (Handlebars filters)
+- [x] upper
+- [x] lower
+- [x] capital
+- [x] trim
+- [x] safename
+- [x] wikilink
+- [x] link
+- [x] date (fuzzy date to YYYY-MM-DD)
+- [x] callout
+- [ ] join
+- [ ] cases
+    - [ ] snake
+    - [ ] kebab
+    - [ ] camel
+    - [ ] pascal
+    - [ ] uncamel
+- [ ] replace
+- [ ] blockquote
+- [ ] image
+
+
 ### Template Examples
+
+[Static AniList schema reference](https://docs.anilist.co/reference/query) for using in templates.
 
 #### Relations Template
 Create automatic links to related media:
@@ -126,10 +142,6 @@ Contributions are welcome! Please feel free to:
 - Submit pull requests for new features or bug fixes
 - Suggest improvements to templates or documentation
 - Share your custom templates and use cases
-
-## 📄 License
-
-This project is licensed under the 0-BSD License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
