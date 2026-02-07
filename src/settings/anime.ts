@@ -344,7 +344,7 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 	addButton.onclick = async () => {
 		this.plugin.settings.animeNoteT.frontMatterT.push({
 			key: "",
-			value: "{{}}",
+			value: "{{{}}}",
 			type: "text",
 		});
 		await this.plugin.saveSettings();

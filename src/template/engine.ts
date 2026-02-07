@@ -30,22 +30,27 @@ function registerHelpers() {
 	// Register helpers only once
 	if (Handlebars) {
 		Handlebars.registerHelper('upper', function (str: string) {
+			if (!str) return "";
 			return str.toUpperCase();
 		});
 
 		Handlebars.registerHelper('lower', function (str: string) {
+			if (!str) return "";
 			return str.toLowerCase();
 		});
 
 		Handlebars.registerHelper('capital', function (str: string) {
+			if (!str) return "";
 			return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 		});
 
 		Handlebars.registerHelper('trim', function (str: string) {
+			if (!str) return "";
 			return str.trim();
 		});
 
 		Handlebars.registerHelper('safename', function (str: string) {
+			if (!str) return "";
 			return str
 				// eslint-disable-next-line no-control-regex
 				.replace(/[<>:"/\\|?*\x00-\x1F]/g, '') // Remove invalid characters
@@ -57,18 +62,24 @@ function registerHelpers() {
 		});
 
 		Handlebars.registerHelper('wikilink', function (val: string) {
+			if (!val) return "";
 			return `[[${val}]]`;
 		});
 
 		Handlebars.registerHelper('link', function (url: string, face: string) {
+			if (!url || !face) return "";
 			return `[${face}](${url})`;
 		});
 
 		Handlebars.registerHelper('date', function (fzDate: FuzzyDate) {
-			return `${fzDate.year}-${fzDate.month}-${fzDate.day}`;
+			if (!fzDate.year || !fzDate.month || !fzDate.day) return "";
+			const month = String(fzDate.month).padStart(2, '0');
+			const day = String(fzDate.day).padStart(2, '0');
+			return `${fzDate.year}-${month}-${day}`;
 		});
 
 		Handlebars.registerHelper('callout', function (type: string, title: string, content: string) {
+			if (!type || !title || !content) return "";
 			const lines = content.split('\n');
 			return `> [!${type}]- ${title}\n` + lines.map(line => `> ${line}`).join('\n');
 		});

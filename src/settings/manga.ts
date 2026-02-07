@@ -344,7 +344,7 @@ export function renderManga(this: SettingTab, containerEl: HTMLElement) {
 	addButton.onclick = async () => {
 		this.plugin.settings.mangaNoteT.frontMatterT.push({
 			key: "",
-			value: "{{}}",
+			value: "{{{}}}",
 			type: "text",
 		});
 		await this.plugin.saveSettings();
