@@ -81,8 +81,7 @@ export function renderExperimental(this: SettingTab, containerEl: HTMLElement) {
 
 	new Setting(containerEl)
 		.setName("Allow custom note names") // #TODO
-		// eslint-disable-next-line obsidianmd/ui/sentence-case
-		.setDesc("NOT IMPLEMENTED YET. By default on every sync, plugin will try to keep note's name to it's template.\
+		.setDesc("Not implemented yet. By default on every sync, plugin will try to keep note's name to it's template.\
 			Meaning if there's a note with fitting required fields but with wrong name, it will change it.\
 			If you don't want this behaviour, turn on this switch.")
 		.addToggle(tgl => {

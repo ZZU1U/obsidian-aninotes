@@ -1,4 +1,3 @@
-/* eslint-disable obsidianmd/ui/sentence-case */
 import { Setting, Modal, App } from "obsidian";
 import { DEFAULT_ANIME_T, REQUIRED_FIELDS } from "template/constant";
 import type { SettingTab } from "../settings";
@@ -15,7 +14,7 @@ class TypeSelectionModal extends Modal {
 
 	onOpen() {
 		const { contentEl } = this;
-		contentEl.createEl("h2", { text: "Select Property Type" });
+		contentEl.createEl("h2", { text: "Select property type" });
 
 		const typeDescriptions = {
 			text: { icon: "file-text", name: "Text", description: "Plain text value. Use for single-line text like title, status" },
@@ -101,7 +100,7 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 	//containerEl.createEl("h2", { text: "Anime note" });
 	new Setting(containerEl)
 		.setName("Note name")
-		.setDesc("Template for created note filename (must end with .md). Context of this note is class Media from Anilist API.")
+		.setDesc("Template for created note filename (must end with .md). Context of this note is class media from anilist API.")
 		.addText((el) => {
 			el
 				.setValue(this.plugin.settings.animeNoteT.fileNameT)
@@ -142,7 +141,7 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 		In the moment plugin does not support list values so in order to make templates with arrays use {{#each}} syntax and separate values with \":::\" sequence.\
 		For more info on avaliable template values see "));
 	descEl.createEl("a", {
-		text: "official AniList schemas",
+		text: "Official anilist schemas",
 		href: "https://studio.apollographql.com/sandbox/explorer?endpoint=https://graphql.anilist.co"
 	});
 	descEl.appendChild(document.createTextNode(". IMPORTANT: By default template engine generates html result so to avoid html escaping use triple curly braces {{{function thingie}}}}.\
@@ -150,7 +149,7 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 
 	// Display required fields (non-editable, non-draggable)
 	const requiredContainer = containerEl.createDiv({ cls: "man-required-fields" });
-	requiredContainer.createEl("h3", { text: "Required Properties (Always Included)", cls: "man-required-heading" });
+	requiredContainer.createEl("h3", { text: "Required properties (always included)", cls: "man-required-heading" });
 	
 	for (const entry of REQUIRED_FIELDS) {
 		const row = requiredContainer.createDiv({ cls: "man-frontmatter-row man-required-row" });
@@ -192,7 +191,7 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 	}
 
 	// User-configurable properties
-	const userPropsHeading = containerEl.createEl("h3", { text: "Custom Properties", cls: "man-user-props-heading" });
+	const userPropsHeading = containerEl.createEl("h3", { text: "Custom properties", cls: "man-user-props-heading" });
 	userPropsHeading.setCssProps({
 		marginTop: "20px",
 		marginBottom: "8px"
@@ -203,7 +202,7 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 	if (list.length === 0) {
 		const emptyState = containerEl.createDiv({ cls: "man-empty-state" });
 		emptyState.createEl("p", { 
-			text: "No custom properties yet. Click 'Add property' to create one.",
+			text: "No custom properties yet. Click 'add property' to create one.",
 			cls: "setting-item-description"
 		});
 		emptyState.setCssProps({
@@ -370,7 +369,7 @@ export function renderAnime(this: SettingTab, containerEl: HTMLElement) {
 	new Setting(containerEl)
 		.setClass("man-body-template")
 		.setName("Note content")
-		.setDesc("Customize content of the note. Use variables to populate data from the AL API.")
+		.setDesc("Customize content of the note. Use variables to populate data from the anilist API.")
 		.addTextArea((ta) => {
 			ta
 				.setPlaceholder(DEFAULT_ANIME_T.noteBodyT)
