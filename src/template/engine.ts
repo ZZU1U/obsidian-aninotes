@@ -1,107 +1,156 @@
+import jsonata from "jsonata";
 import { FuzzyDate } from "generated/anilist-schema";
-//import { registerPartial } from "handlebars";
 
-type HandlebarsHelperFunction = (...args: unknown[]) => unknown;
-type HandlebarsTemplateFunction = string | HandlebarsHelperFunction;
-
-type HandlebarsInstance = {
-	registerHelper: (name: string, fn: HandlebarsHelperFunction) => void;
-	registerPartial: (name: string, fn: HandlebarsTemplateFunction) => void;
-	compile: (template: string) => (data: Record<string, unknown>) => string;
+type JsonataExpression = {
+	evaluate: (input: unknown) => unknown;
+	registerFunction: (name: string, implementation: (...args: unknown[]) => unknown, signature?: string) => void;
 };
 
-// Dynamic import cache
-let Handlebars: HandlebarsInstance | null = null;
-let helpersRegistered = false;
+type JsonataFactory = (expression: string) => JsonataExpression;
 
-async function getHandlebars(): Promise<HandlebarsInstance> {
-	if (!Handlebars) {
-		const imported = await import("handlebars");
-		Handlebars = imported.default || imported;
-		if (!helpersRegistered) {
-			registerHelpers();
-			helpersRegistered = true;
-		}
+type TemplateFunction = (data: Record<string, unknown>) => Promise<string>;
+type RawTemplateFunction = (data: Record<string, unknown>) => Promise<unknown>;
+type HelperFunction = (...args: unknown[]) => unknown;
+
+const registeredHelpers = new Map<string, { fn: HelperFunction; signature?: string }>();
+
+const jsonataFactory = jsonata as unknown as JsonataFactory;
+
+function coerceString(val: unknown): string {
+	if (val === null || val === undefined) return "";
+	if (typeof val === "string") return val;
+	if (typeof val === "number" || typeof val === "boolean") return String(val);
+	try {
+		return JSON.stringify(val);
+	} catch {
+		if (typeof val === "object") return Object.prototype.toString.call(val);
+		return String(val);
 	}
-	return Handlebars;
 }
 
-function registerHelpers() {
-	// Register helpers only once
-	if (Handlebars) {
-		Handlebars.registerHelper('upper', function (str: string) {
-			if (!str) return "";
-			return str.toUpperCase();
-		});
+function registerBuiltInHelpers() {
+	// Keep parity with previous Handlebars helpers, but as Jsonata functions
+	registeredHelpers.set("upper", {
+		fn: (str: unknown) => coerceString(str).toUpperCase(),
+		signature: "<s:s>",
+	});
 
-		Handlebars.registerHelper('lower', function (str: string) {
-			if (!str) return "";
-			return str.toLowerCase();
-		});
+	registeredHelpers.set("lower", {
+		fn: (str: unknown) => coerceString(str).toLowerCase(),
+		signature: "<s:s>",
+	});
 
-		Handlebars.registerHelper('capital', function (str: string) {
-			if (!str) return "";
-			return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-		});
+	registeredHelpers.set("capital", {
+		fn: (str: unknown) => {
+			const s = coerceString(str);
+			if (!s) return "";
+			return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+		},
+		signature: "<s:s>",
+	});
 
-		Handlebars.registerHelper('trim', function (str: string) {
-			if (!str) return "";
-			return str.trim();
-		});
+	registeredHelpers.set("trim", {
+		fn: (str: unknown) => coerceString(str).trim(),
+		signature: "<s:s>",
+	});
 
-		Handlebars.registerHelper('safename', function (str: string) {
-			if (!str) return "";
-			return str
+	registeredHelpers.set("safename", {
+		fn: (str: unknown) => {
+			const s = coerceString(str);
+			if (!s) return "";
+			return s
 				// eslint-disable-next-line no-control-regex
-				.replace(/[<>:"/\\|?*\x00-\x1F]/g, '') // Remove invalid characters
-				.replace(/[#[\]^]/g, '') // Remove Obsidian-specific problematic characters
-				.replace(/^\./, '_') // Don't start with dot
-				.replace(/^\.+/, '') // Remove leading periods
+				.replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
+				.replace(/[#[\]^]/g, "")
+				.replace(/^\./, "_")
+				.replace(/^\.+/, "")
 				.trim()
-				.slice(0, 245); // Limit length
-		});
+				.slice(0, 245);
+		},
+		signature: "<s:s>",
+	});
 
-		Handlebars.registerHelper('wikilink', function (val: string) {
-			if (!val) return "";
-			return `[[${val}]]`;
-		});
+	registeredHelpers.set("wikilink", {
+		fn: (val: unknown) => {
+			const s = coerceString(val);
+			if (!s) return "";
+			return `[[${s}]]`;
+		},
+		signature: "<s:s>",
+	});
 
-		Handlebars.registerHelper('link', function (url: string, face: string) {
-			if (!url || !face) return "";
-			return `[${face}](${url})`;
-		});
+	registeredHelpers.set("link", {
+		fn: (url: unknown, face: unknown) => {
+			const u = coerceString(url);
+			const f = coerceString(face);
+			if (!u || !f) return "";
+			return `[${f}](${u})`;
+		},
+		signature: "<ss:s>",
+	});
 
-		Handlebars.registerHelper('date', function (fzDate: FuzzyDate) {
-			if (!fzDate.year || !fzDate.month || !fzDate.day) return "";
-			const month = String(fzDate.month).padStart(2, '0');
-			const day = String(fzDate.day).padStart(2, '0');
-			return `${fzDate.year}-${month}-${day}`;
-		});
+	registeredHelpers.set("date", {
+		fn: (fzDate: unknown) => {
+			const d = fzDate as FuzzyDate | null | undefined;
+			if (!d?.year || !d?.month || !d?.day) return "";
+			const month = String(d.month).padStart(2, "0");
+			const day = String(d.day).padStart(2, "0");
+			return `${d.year}-${month}-${day}`;
+		},
+		// accept any object; return string
+		signature: "<x:s>",
+	});
 
-		Handlebars.registerHelper('callout', function (type: string, title: string, content: string) {
-			if (!type || !title || !content) return "";
-			const lines = content.split('\n');
-			return `> [!${type}]- ${title}\n` + lines.map(line => `> ${line}`).join('\n');
-		});
+	registeredHelpers.set("callout", {
+		fn: (type: unknown, title: unknown, content: unknown) => {
+			const t = coerceString(type);
+			const ti = coerceString(title);
+			const c = coerceString(content);
+			if (!t || !ti || !c) return "";
+			const lines = c.split("\n");
+			return `> [!${t}]- ${ti}\n` + lines.map((line) => `> ${line}`).join("\n");
+		},
+		signature: "<sss:s>",
+	});
+}
+
+registerBuiltInHelpers();
+
+function applyHelpers(expr: JsonataExpression) {
+	for (const [name, { fn, signature }] of registeredHelpers.entries()) {
+		expr.registerFunction(name, fn, signature);
 	}
 }
 
-// Export API that matches Handlebars but with dynamic loading
-const HandlebarsDynamic = {
-	registerHelper: async (name: string, fn: HandlebarsHelperFunction) => {
-		const hb = await getHandlebars();
-		hb.registerHelper(name, fn);
-	},
-	
-	compile: async (template: string) => {
-		const hb = await getHandlebars();
-		return hb.compile(template);
+async function evaluateExpression(expr: JsonataExpression, data: Record<string, unknown>): Promise<unknown> {
+	const result = expr.evaluate(data);
+	if (
+		result &&
+		(typeof result === "object" || typeof result === "function") &&
+		"then" in (result as Record<string, unknown>) &&
+		typeof (result as { then?: unknown }).then === "function"
+	) {
+		return await (result as Promise<unknown>);
+	}
+	return result;
+}
+
+const JsonataDynamic = {
+	registerHelper: async (name: string, fn: HelperFunction, signature?: string) => {
+		// NOTE: affects subsequent compile() calls
+		registeredHelpers.set(name, { fn, signature });
 	},
 
-	registerPartial: async (name: string, fn: HandlebarsTemplateFunction) => {
-		const hb = await getHandlebars();
-		hb.registerPartial(name, fn);
-	}
+	compileRaw: async (template: string): Promise<RawTemplateFunction> => {
+		const expr = jsonataFactory(template);
+		applyHelpers(expr);
+		return async (data: Record<string, unknown>) => evaluateExpression(expr, data);
+	},
+
+	compile: async (template: string): Promise<TemplateFunction> => {
+		const raw = await JsonataDynamic.compileRaw(template);
+		return async (data: Record<string, unknown>) => coerceString(await raw(data));
+	},
 };
 
-export default HandlebarsDynamic;
+export default JsonataDynamic;
