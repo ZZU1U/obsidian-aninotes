@@ -131,21 +131,17 @@ export function renderManga(this: SettingTab, containerEl: HTMLElement) {
 	const descEl = containerEl.createEl("p", {
 		cls: "setting-item-description",
 	});
-	descEl.appendChild(document.createTextNode("Manga template consists of frontmatter template and note body template.\
-		For rendering template strings used "));
+	descEl.appendChild(document.createTextNode("Manga template consists of frontmatter template and note body template. For rendering template strings used "));
 	descEl.createEl("a", {
-		text: "Handlebars",
-		href: "https://handlebarsjs.com/guide/"
+		text: "Jsonata",
+		href: "https://docs.jsonata.org/"
 	});
-	descEl.appendChild(document.createTextNode(" engine so you can use Handlebars syntax.\
-		In the moment plugin does not support list values so in order to make templates with arrays use {{#each}} syntax and separate values with \":::\" sequence.\
-		For more info on avaliable template values see "));
+	descEl.appendChild(document.createTextNode(" expressions. Frontmatter list properties can return arrays directly (no special delimiters). For more info on available template values see "));
 	descEl.createEl("a", {
 		text: "Official anilist schemas",
 		href: "https://studio.apollographql.com/sandbox/explorer?endpoint=https://graphql.anilist.co"
 	});
-	descEl.appendChild(document.createTextNode(". IMPORTANT: By default template engine generates html result so to avoid html escaping use triple curly braces {{{filter thingie}}}}.\
-		Context of following templates is class MediaList from AniList API."));
+	descEl.appendChild(document.createTextNode(". Context of following templates is class MediaList from AniList API."));
 
 	// Display required fields (non-editable, non-draggable)
 	const requiredContainer = containerEl.createDiv({ cls: "man-required-fields" });
@@ -294,7 +290,7 @@ export function renderManga(this: SettingTab, containerEl: HTMLElement) {
 			})
 			.addText((text) => {
 				text
-					.setPlaceholder("{{{media.title.romaji}}} or {{{media.status}}}")
+					.setPlaceholder("Example: media.title.romaji or status")
 					.setValue(entry.value)
 					.onChange(async (value) => {
 						entry.value = value;
