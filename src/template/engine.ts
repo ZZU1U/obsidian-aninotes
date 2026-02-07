@@ -1,5 +1,5 @@
 import { FuzzyDate } from "generated/anilist-schema";
-import { registerPartial } from "handlebars";
+//import { registerPartial } from "handlebars";
 
 type HandlebarsHelperFunction = (...args: unknown[]) => unknown;
 type HandlebarsTemplateFunction = string | HandlebarsHelperFunction;

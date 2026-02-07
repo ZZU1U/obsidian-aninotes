@@ -122,8 +122,6 @@ export const getUserAnimeList = async (
 ): Promise<MediaList[] | undefined> => {
     // Generate query with specified options
     const query = useCustomRequest ? customRequest : generateQuery(options);
-        console.log(query);
-
 
     const variables = {
         type: "ANIME",
