@@ -17,11 +17,7 @@ export async function buildFrontmatterFromEntries(
 		const key = entry.key.trim();
 		if (!key) continue;
 
-		out[key] = (await Handlebars.compile(entry.value))(context);
-		
-		if (entry.type === "list" && out[key] && typeof out[key] === "string" && out[key].includes(":::")) {
-			out[key] = out[key].split(":::").map(s => s.trim()).filter(Boolean);
-		}
+		out[key] = await (await Handlebars.compileRaw(entry.value))(context);
 	}
 
 	return out;

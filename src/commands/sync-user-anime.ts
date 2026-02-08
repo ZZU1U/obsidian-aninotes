@@ -46,9 +46,12 @@ export default async function syncUserAnimeList(this: MANPlugin) {
             await this.app.fileManager.processFrontMatter(tfile, (fm: Record<string, unknown>) => {
                 if (fm.man === "man" && fm.id && fetchedAnimeByID[fm.id as number]) {
                     const noteAnime = fetchedAnimeByID[fm.id as number];
-                    if (tfile.name !== fileName(noteAnime!.media!)) {
-                        this.app.vault.rename(tfile, `${notesDir}/${fileName(noteAnime!.media!)}`).catch(()=>{});
-                    }
+                    hb.compile(this.settings.animeNoteT.fileNameT).then(async (fn) => {
+                        const desiredName = await fn(noteAnime!.media!);
+                        if (tfile.name !== desiredName) {
+                            this.app.vault.rename(tfile, `${notesDir}/${desiredName}`).catch(() => {});
+                        }
+                    }).catch(() => {});
                 }
             });
         }
@@ -59,12 +62,12 @@ export default async function syncUserAnimeList(this: MANPlugin) {
 
     try {
         for (const anime of userList) {
-            const fullPath = `${notesDir}/${fileName(anime.media!)}`;
+            const fullPath = `${notesDir}/${await fileName(anime.media!)}`;
             
             let file = this.app.vault.getFileByPath(fullPath);
 
             if (!file) {
-                const noteContent = bodyT(anime);
+                const noteContent = await bodyT(anime);
                 file = await this.app.vault.create(fullPath, noteContent);
             }
 

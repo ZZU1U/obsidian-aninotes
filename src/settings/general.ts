@@ -5,8 +5,7 @@ import type { SettingTab } from "../settings";
 
 export function renderGeneral(this: SettingTab, containerEl: HTMLElement) {
 	this.accountAL = new Setting(containerEl)
-		// eslint-disable-next-line obsidianmd/ui/sentence-case
-		.setName("AniList account")
+		.setName("Anilist account")
 		.addButton(async btn => {
 			btn
 				.setButtonText(this.plugin.settings.tokenAL === undefined ? "Connect" : "Reconnect")
