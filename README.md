@@ -11,7 +11,7 @@ AniNotes is an Obsidian plugin that synchronizes your AniList anime and manga li
 - **Automatic Sync**: Download your complete AniList anime and manga lists directly into Obsidian
 - **Rich Metadata**: Access comprehensive AniList metadata for use in templates and queries
 - **Progress Tracking**: Sync your watching/reading progress and scores
-- **Custom Templates**: Use Handlebars templates to customize note creation
+- **Custom Templates**: Use Jsonata templates to customize note creation
 - **Relations Support**: Automatically link to prequels, sequels, adaptations, and other related media
 - **Property Sync**: Keep your note properties in sync with AniList data
 - **Vault Integration**: Reference your media notes in other Obsidian notes using standard wiki links
@@ -34,7 +34,7 @@ Right now plugin is only available as source code. You can install it by downloa
    - Metadata fields to include
 
 ### Template Customization
-AniNotes uses Handlebars templates for note creation. You can customize:
+AniNotes uses Jsonata json-templates for note creation. You can customize:
 - Note structure and layout
 - Which metadata fields to include
 - How relations are displayed
@@ -47,14 +47,10 @@ AniNotes uses Handlebars templates for note creation. You can customize:
 2. **Manual Updates**: Use "Sync Changes" to update only modified entries
 3. **Individual Sync**: Right-click on specific entries to sync them individually
 
-<!-- TODO: Add screenshots showing:
-- Plugin settings interface
-- Example of synced anime/manga notes
-- Template customization interface
-- Command palette usage
--->
+![Settings for Anime](./assets/settings_anime.png)
+![Note example](./assets/note_example.png)
 
-### Avaliable helpers (Handlebars filters)
+### Avaliable helpers (Jsonata filters)
 - [x] upper
 - [x] lower
 - [x] capital
@@ -80,59 +76,15 @@ AniNotes uses Handlebars templates for note creation. You can customize:
 
 [Static AniList schema reference](https://docs.anilist.co/reference/query) for using in templates.
 
-#### Relations Template
-Create automatic links to related media:
-```handlebars
-{{#each media.relations.edges}}
-- {{{capital this.relationType}}} [[{{{safename this.node.title.userPreferred}}} ({{{this.node.format}}}, {{{this.node.id}}})]]
-{{/each}}
-```
-
-#### Basic Media Template
-```handlebars
-# {{{media.title.userPreferred}}}
-
-**Format**: {{{media.format}}}  
-**Status**: {{{media.status}}}  
-**Episodes**: {{{media.episodes}}}  
-**Score**: {{{userMedia.score}}}/10  
-**Progress**: {{{userMedia.progress}}}/{{{media.episodes}}}
-
-## Synopsis
-{{{media.description}}}
-
-## Relations
-{{#each media.relations.edges}}
-- {{{capital this.relationType}}} [[{{{safename this.node.title.userPreferred}}}]]
-{{/each}}
-```
+- [ ] TODO: Add template examples
 
 ## 🔧 Development
-
-### Building from Source
-```bash
-# Clone the repository
-git clone https://github.com/zzu1u/obsidian-aninotes.git
-cd obsidian-aninotes
-
-# Install dependencies
-npm install
-
-# Development mode (watch for changes)
-npm run dev
-
-# Build for production
-npm run build
-
-# Lint code
-npm run lint
-```
 
 ### Project Structure
 - `src/main.ts` - Main plugin entry point
 - `src/api/` - AniList GraphQL API integration
 - `src/settings/` - Plugin configuration and UI
-- `src/template/` - Handlebars template processing
+- `src/template/` - Jsonata template processing
 - `src/models/` - TypeScript interfaces and types
 
 ## 🤝 Contributing
@@ -148,7 +100,7 @@ Contributions are welcome! Please feel free to:
 - Inspired by the original MyAnimeNotes plugin
 - Built with [Obsidian API](https://docs.obsidian.md/Plugins/Getting+started/Build+a+plugin)
 - Uses [AniList GraphQL API](https://anilist.gitbook.io/anilist-apiv2-docs/overview/graphql/getting-started)
-- Template rendering powered by [Handlebars.js](https://handlebarsjs.com/)
+- Template rendering powered by [Jsonata](https://jsonata.org)
 
 ---
 
