@@ -102,6 +102,7 @@ export default async function syncUserMangaList(this: MANPlugin) {
         }
     } catch (error) {
         console.error(error);
-        new Notice("There was an error syncing your manga list. Check the console for more details.");
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        new Notice(`There was an error syncing your manga list. ${errorMessage}`);
     }
 }

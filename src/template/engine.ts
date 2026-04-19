@@ -32,12 +32,12 @@ function coerceString(val: unknown): string {
 function registerBuiltInHelpers() {
 	// Keep parity with previous Handlebars helpers, but as Jsonata functions
 	registeredHelpers.set("capital", {
-		fn: (str: unknown) => {
+		fn: (str: any) => {
 			const s = coerceString(str);
 			if (!s) return "";
 			return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 		},
-		signature: "<s:s>",
+		signature: "<x:s>",
 	});
 
 	registeredHelpers.set("safename", {
@@ -53,7 +53,7 @@ function registerBuiltInHelpers() {
 				.trim()
 				.slice(0, 245);
 		},
-		signature: "<s:s>",
+		signature: "<x:s>",
 	});
 
 	registeredHelpers.set("wikilink", {
@@ -62,7 +62,7 @@ function registerBuiltInHelpers() {
 			if (!s) return "";
 			return `[[${s}]]`;
 		},
-		signature: "<s:s>",
+		signature: "<x:s>",
 	});
 
 	registeredHelpers.set("link", {
@@ -72,7 +72,7 @@ function registerBuiltInHelpers() {
 			if (!u || !f) return "";
 			return `[${f}](${u})`;
 		},
-		signature: "<ss:s>",
+		signature: "<xx:s>",
 	});
 
 	registeredHelpers.set("date", {
@@ -100,7 +100,7 @@ function registerBuiltInHelpers() {
 			const lines = normalizedContent.split("\n");
 			return `> [!${t}]- ${ti}\n` + lines.map((line) => `> ${line}`).join("\n");
 		},
-		signature: "<sss:s>",
+		signature: "<xxx:s>",
 	});
 
 	registeredHelpers.set("blockquote", {
@@ -114,7 +114,7 @@ function registerBuiltInHelpers() {
 			const lines = normalizedContent.split("\n");
 			return lines.map((line) => `> ${line}`).join("\n");
 		},
-		signature: "<s:s>",
+		signature: "<x:s>",
 	});
 
 	registeredHelpers.set("image", {
@@ -125,7 +125,7 @@ function registerBuiltInHelpers() {
 			if (!a) return `![${u}](${u})`;
 			return `![${a}](${u})`;
 		},
-		signature: "<ss:s>",
+		signature: "<xx:s>",
 	});
 }
 
