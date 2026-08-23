@@ -1,9 +1,14 @@
-import { FrontmatterEntry, NoteTemplateSettings } from "./models"
+import type { FrontmatterEntry, NoteTemplateSettings } from "./models";
+
+/**
+ * Legacy frontmatter marker written by older plugin versions. New notes no
+ * longer carry it; sync strips it from existing notes.
+ */
+export const MAN_MARKER = "man";
 
 export const REQUIRED_FIELDS: FrontmatterEntry[] = [
 	{ key: "ALId", value: "media.id", type: "number" },
-	{ key: "man", value: "\"man\"", type: "text" },
-]
+];
 
 export const DEFAULT_ANIME_T: NoteTemplateSettings = {
 	fileDir: "AL/Anime",

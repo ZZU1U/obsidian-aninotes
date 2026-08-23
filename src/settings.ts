@@ -1,91 +1,92 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
-import MANPlugin from "./main";
-import { OAuthTokenSchema } from "models/auth";
-import { FrontmatterEntry, NoteTemplateSettings } from "./template/models";
+import { PluginSettingTab } from "obsidian";
+import type { App, Setting } from "obsidian";
+import type AniNotesPlugin from "./main";
+import type { OAuthTokenSchema } from "./models/auth";
+import type { NoteTemplateSettings } from "./template/models";
+import type { FetchOptions } from "./api/common";
+import type { AutoSyncIntervalMode } from "./constant";
 import { renderGeneral } from "./settings/general";
-import { renderAnime } from "./settings/anime";
-import { renderManga } from "./settings/manga";
+import { renderMediaNoteSettings } from "./settings/media-notes";
 import { renderExperimental } from "./settings/experimental";
-import { FetchOptions } from "api/common";
+import { renderLog } from "./settings/log";
 
-export type { FrontmatterEntry };
-
-export interface MANSettings {
-	tokenAL?: OAuthTokenSchema,
-	animeNoteT: NoteTemplateSettings,
-	mangaNoteT: NoteTemplateSettings,
-	dateFormat: string;
-	syncOnStartup: boolean;
-	startupDelay: number;
-	backgroundSync: boolean;
+export interface AniNotesSettings {
+	tokenAL?: OAuthTokenSchema;
+	animeNoteT: NoteTemplateSettings;
+	mangaNoteT: NoteTemplateSettings;
 	fetchUserDataAtStartup: boolean;
-	backgroundSyncInterval: number;
 	accountALInfo?: {
-		id: number,
-		name: string
-	},
-	apiFetchOptions: FetchOptions,
-	useCustomAnimeRequest: boolean,
-	useCustomMangaRequest: boolean,
-	customMangaRequest: string,
-	customAnimeRequest: string,
-	allowUserNoteNames: boolean,
+		id: number;
+		name: string;
+	};
+	apiFetchOptions: FetchOptions;
+	useCustomAnimeRequest: boolean;
+	useCustomMangaRequest: boolean;
+	customMangaRequest: string;
+	customAnimeRequest: string;
+	allowUserNoteNames: boolean;
+	autoSyncOnStartup: boolean;
+	autoSyncInterval: AutoSyncIntervalMode;
+	/** Minutes between background syncs; used when autoSyncInterval is "custom". */
+	autoSyncCustomInterval: number;
+	notifyOnSync: boolean;
 }
 
-type SettingsTabId = "general" | "anime" | "manga" | "experimental";
+type SettingsTabId = "general" | "anime" | "manga" | "experimental" | "log";
 
 export class SettingTab extends PluginSettingTab {
-	plugin: MANPlugin;
+	plugin: AniNotesPlugin;
 	private activeTab: SettingsTabId = "general";
 	accountAL?: Setting = undefined;
 
-	constructor(app: App, plugin: MANPlugin) {
+	constructor(app: App, plugin: AniNotesPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
 
 	display(): void {
-		const {containerEl} = this;
+		const { containerEl } = this;
 		containerEl.empty();
 
-		const tabBar = containerEl.createDiv("my-plugin-tabs");
+		const tabBar = containerEl.createDiv("aninotes-tabs");
 
-		const createTab = (id: SettingsTabId, label: string) => {
+		const tabs: Array<[SettingsTabId, string]> = [
+			["general", "General"],
+			["anime", "Anime"],
+			["manga", "Manga"],
+			["experimental", "Experimental"],
+			["log", "Log"],
+		];
+
+		for (const [id, label] of tabs) {
 			const btn = tabBar.createEl("button", { text: label });
 			btn.classList.toggle("is-active", this.activeTab === id);
 			btn.onclick = () => {
 				this.activeTab = id;
 				this.display();
 			};
-		};
-
-		createTab("general", "General");
-		createTab("anime", "Anime");
-		createTab("manga", "Manga");
-		createTab("experimental", "Experimental");
+		}
 
 		containerEl.createEl("hr").setCssProps({
-			margin: "8px 0"
+			margin: "8px 0",
 		});
 
-		// Content
-		if (this.activeTab === "general") {
-			this.renderGeneral(containerEl);
+		switch (this.activeTab) {
+			case "general":
+				renderGeneral.call(this, containerEl);
+				break;
+			case "anime":
+				renderMediaNoteSettings.call(this, containerEl, "anime");
+				break;
+			case "manga":
+				renderMediaNoteSettings.call(this, containerEl, "manga");
+				break;
+			case "experimental":
+				renderExperimental.call(this, containerEl);
+				break;
+			case "log":
+				renderLog.call(this, containerEl);
+				break;
 		}
-		if (this.activeTab === "anime") {
-			this.renderAnime(containerEl);
-		}
-		if (this.activeTab === "manga") {
-			this.renderManga(containerEl);
-		}
-		if (this.activeTab === "experimental") {
-			this.renderExperimental(containerEl);
-		}
-
 	}
-
-	private renderGeneral = renderGeneral;
-	private renderAnime = renderAnime;
-	private renderManga = renderManga;
-	private renderExperimental = renderExperimental;
 }

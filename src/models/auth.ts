@@ -1,15 +1,11 @@
 export interface OAuthTokenSchema {
-    access_token: string,
-    refresh_token: string,
-    expires_in: number,
-    token_type: string
-}
-
-export interface ALOAuthDataSchema {
-    url: string
+	access_token: string;
+	refresh_token: string;
+	expires_in: number;
+	token_type: string;
 }
 
 export interface UserInfo {
-    id: number,
-    name: string
+	id: number;
+	name: string;
 }

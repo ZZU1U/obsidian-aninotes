@@ -22,6 +22,17 @@ export default tseslint.config(
 		},
 	},
 	...obsidianmd.configs.recommended,
+	{
+		plugins: { obsidianmd },
+		rules: {
+			// AniList is a brand; ALId is the plugin's frontmatter key;
+			// Media/MediaList are AniList API type names used in help copy.
+			"obsidianmd/ui/sentence-case": [
+				"error",
+				{ ignoreWords: ["AniList", "ALId", "Media", "MediaList", "Jsonata"] },
+			],
+		},
+	},
 	globalIgnores([
 		"node_modules",
 		"dist",

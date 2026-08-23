@@ -22,8 +22,8 @@ Other way would be to manually download the latest release from the releases pag
 - [x] link
 - [x] date (fuzzy date to YYYY-MM-DD)
 - [x] callout
-- [ ] blockquote
-- [ ] image
+- [x] blockquote
+- [x] image
 
 ### Templating
 

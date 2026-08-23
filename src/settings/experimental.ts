@@ -1,10 +1,9 @@
 import { Setting } from "obsidian";
 import type { SettingTab } from "../settings";
-import type { FetchOptions } from "api/common";
-import { generateQuery as generateAnimeQuery } from "api/anime";
-import { generateQuery as generateMangaQuery } from "api/manga";
+import type { FetchOptions } from "../api/common";
+import { generateMediaListQuery } from "../api/query";
 
-export function renderExperimental(this: SettingTab, containerEl: HTMLElement) {
+export function renderExperimental(this: SettingTab, containerEl: HTMLElement): void {
 	new Setting(containerEl)
 		.setName("Experimental")
 		.setHeading();
@@ -33,13 +32,13 @@ export function renderExperimental(this: SettingTab, containerEl: HTMLElement) {
 		.setName("Use custom anime request")
 		.setDesc("When syncing, use a custom anime request instead of the one constructed by plugin.")
 		.addButton((btn) => {
-			btn.setIcon("book-dashed")
-			btn.setTooltip("Get current request")
+			btn.setIcon("book-dashed");
+			btn.setTooltip("Get current request");
 			btn.onClick(async () => {
-				this.plugin.settings.customAnimeRequest = generateAnimeQuery(this.plugin.settings.apiFetchOptions);
+				this.plugin.settings.customAnimeRequest = generateMediaListQuery(this.plugin.settings.apiFetchOptions, "ANIME");
 				await this.plugin.saveSettings();
 				this.display();
-			})
+			});
 		}).addToggle((el) => {
 			el.setValue(this.plugin.settings.useCustomAnimeRequest);
 			el.onChange(async (value) => {
@@ -58,13 +57,13 @@ export function renderExperimental(this: SettingTab, containerEl: HTMLElement) {
 		.setName("Use custom manga request")
 		.setDesc("When syncing, use a custom manga request instead of the one constructed by plugin.")
 		.addButton((btn) => {
-			btn.setIcon("book-dashed")
-			btn.setTooltip("Get current request")
+			btn.setIcon("book-dashed");
+			btn.setTooltip("Get current request");
 			btn.onClick(async () => {
-				this.plugin.settings.customMangaRequest = generateMangaQuery(this.plugin.settings.apiFetchOptions);
+				this.plugin.settings.customMangaRequest = generateMediaListQuery(this.plugin.settings.apiFetchOptions, "MANGA");
 				await this.plugin.saveSettings();
 				this.display();
-			})
+			});
 		}).addToggle((el) => {
 			el.setValue(this.plugin.settings.useCustomMangaRequest);
 			el.onChange(async (value) => {
@@ -81,15 +80,13 @@ export function renderExperimental(this: SettingTab, containerEl: HTMLElement) {
 
 	new Setting(containerEl)
 		.setName("Allow custom note names")
-		.setDesc("When enabled, the plugin will not rename notes to match the filename template during sync. \
-			this allows you to customize note names while keeping them synced by ALId. \
-			When disabled (default), notes will be renamed to match the template on each sync.")
-		.addToggle(tgl => {
+		.setDesc("When enabled, the plugin will not rename notes to match the filename template during sync. This allows you to customize note names while keeping them synced by ALId. When disabled (default), notes will be renamed to match the template on each sync.")
+		.addToggle((tgl) => {
 			tgl
 				.setValue(this.plugin.settings.allowUserNoteNames)
 				.onChange(async (val: boolean) => {
 					this.plugin.settings.allowUserNoteNames = val;
-					await this.plugin.saveSettings()
-				})
-		})
+					await this.plugin.saveSettings();
+				});
+		});
 }

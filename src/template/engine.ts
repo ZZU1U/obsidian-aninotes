@@ -1,6 +1,6 @@
 import jsonata from "jsonata";
-import { FuzzyDate } from "generated/anilist-schema";
-import { htmlToMarkdown } from "tools/parsing";
+import { FuzzyDate } from "../generated/anilist-schema";
+import { htmlToMarkdown } from "../tools/parsing";
 
 type JsonataExpression = {
 	evaluate: (input: unknown) => unknown;
@@ -22,15 +22,16 @@ function coerceString(val: unknown): string {
 	if (typeof val === "string") return val;
 	if (typeof val === "number" || typeof val === "boolean") return String(val);
 	try {
-		return JSON.stringify(val);
+		// JSON.stringify returns undefined (not a throw) for symbols/functions.
+		return JSON.stringify(val) ?? "";
 	} catch {
-		if (typeof val === "object") return Object.prototype.toString.call(val);
-		return String(val);
+		// Throws for bigint and circular structures; anything left has no
+		// meaningful string form, so use the safe canonical representation.
+		return Object.prototype.toString.call(val);
 	}
 }
 
 function registerBuiltInHelpers() {
-	// Keep parity with previous Handlebars helpers, but as Jsonata functions
 	registeredHelpers.set("capital", {
 		fn: (str: unknown) => {
 			const s = coerceString(str);
@@ -138,24 +139,12 @@ function applyHelpers(expr: JsonataExpression) {
 }
 
 async function evaluateExpression(expr: JsonataExpression, data: Record<string, unknown>): Promise<unknown> {
-	const result = expr.evaluate(data);
-	if (
-		result &&
-		(typeof result === "object" || typeof result === "function") &&
-		"then" in (result as Record<string, unknown>) &&
-		typeof (result as { then?: unknown }).then === "function"
-	) {
-		return await (result as Promise<unknown>);
-	}
-	return result;
+	// jsonata only returns a promise when an async callback is registered;
+	// Promise.resolve passes plain values through untouched.
+	return await Promise.resolve(expr.evaluate(data));
 }
 
-const JsonataDynamic = {
-	registerHelper: async (name: string, fn: HelperFunction, signature?: string) => {
-		// NOTE: affects subsequent compile() calls
-		registeredHelpers.set(name, { fn, signature });
-	},
-
+const templateEngine = {
 	compileRaw: async (template: string): Promise<RawTemplateFunction> => {
 		const expr = jsonataFactory(template);
 		applyHelpers(expr);
@@ -163,9 +152,9 @@ const JsonataDynamic = {
 	},
 
 	compile: async (template: string): Promise<TemplateFunction> => {
-		const raw = await JsonataDynamic.compileRaw(template);
+		const raw = await templateEngine.compileRaw(template);
 		return async (data: Record<string, unknown>) => coerceString(await raw(data));
 	},
 };
 
-export default JsonataDynamic;
+export default templateEngine;
